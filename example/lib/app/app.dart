@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:chewie/chewie.dart';
 import 'package:chewie_example/app/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 // ignore: depend_on_referenced_packages
 import 'package:video_player/video_player.dart';
 
@@ -48,14 +48,10 @@ class _ChewieDemoState extends State<ChewieDemo> {
   ];
 
   Future<void> initializePlayer() async {
-    _videoPlayerController1 =
-        VideoPlayerController.network(srcs[currPlayIndex]);
-    _videoPlayerController2 =
-        VideoPlayerController.network(srcs[currPlayIndex]);
-    await Future.wait([
-      _videoPlayerController1.initialize(),
-      _videoPlayerController2.initialize()
-    ]);
+    _videoPlayerController1 = VideoPlayerController.network(srcs[currPlayIndex]);
+    _videoPlayerController2 = VideoPlayerController.network(srcs[currPlayIndex]);
+    await Future.wait(
+        [_videoPlayerController1.initialize(), _videoPlayerController2.initialize()]);
     _createChewieController();
     setState(() {});
   }
@@ -114,8 +110,7 @@ class _ChewieDemoState extends State<ChewieDemo> {
       videoPlayerController: _videoPlayerController1,
       autoPlay: true,
       looping: true,
-      progressIndicatorDelay:
-          bufferDelay != null ? Duration(milliseconds: bufferDelay!) : null,
+      progressIndicatorDelay: bufferDelay != null ? Duration(milliseconds: bufferDelay!) : null,
 
       additionalOptions: (context) {
         return <OptionItem>[
@@ -184,10 +179,10 @@ class _ChewieDemoState extends State<ChewieDemo> {
             Expanded(
               child: Center(
                 child: _chewieController != null &&
-                        _chewieController!
-                            .videoPlayerController.value.isInitialized
+                        _chewieController!.videoPlayerController.value.isInitialized
                     ? Chewie(
                         controller: _chewieController!,
+                        onToggleFullscreen: (bool newState) {},
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -315,8 +310,7 @@ class _ChewieDemoState extends State<ChewieDemo> {
               ListTile(
                 title: const Text("Delay"),
                 subtitle: DelaySlider(
-                  delay:
-                      _chewieController?.progressIndicatorDelay?.inMilliseconds,
+                  delay: _chewieController?.progressIndicatorDelay?.inMilliseconds,
                   onSave: (delay) async {
                     if (delay != null) {
                       bufferDelay = delay == 0 ? null : delay;
@@ -333,8 +327,7 @@ class _ChewieDemoState extends State<ChewieDemo> {
 }
 
 class DelaySlider extends StatefulWidget {
-  const DelaySlider({Key? key, required this.delay, required this.onSave})
-      : super(key: key);
+  const DelaySlider({Key? key, required this.delay, required this.onSave}) : super(key: key);
 
   final int? delay;
   final void Function(int?) onSave;
