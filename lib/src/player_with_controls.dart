@@ -1,10 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+
 import '../src/chewie_player.dart';
 import '../src/helpers/adaptive_controls.dart';
 import '../src/notifiers/index.dart';
+
 
 class PlayerWithControls extends StatelessWidget {
   const PlayerWithControls({Key? key}) : super(key: key);
@@ -33,18 +34,28 @@ class PlayerWithControls extends StatelessWidget {
           : Container();
     }
 
-    Widget _buildPlayerWithControls(ChewieController chewieController, BuildContext context) {
+    Widget _buildPlayerWithControls(
+      ChewieController chewieController,
+      BuildContext context,
+    ) {
       return Stack(
         children: <Widget>[
-          chewieController.placeholder ?? Container(),
-          Center(
-            child: AspectRatio(
-              aspectRatio: chewieController.aspectRatio ??
-                  chewieController.videoPlayerController.value.aspectRatio,
-              child: VideoPlayer(chewieController.videoPlayerController),
+          if (chewieController.placeholder != null)
+            chewieController.placeholder!,
+          InteractiveViewer(
+            transformationController: chewieController.transformationController,
+            maxScale: chewieController.maxScale,
+            panEnabled: chewieController.zoomAndPan,
+            scaleEnabled: chewieController.zoomAndPan,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: chewieController.aspectRatio ??
+                    chewieController.videoPlayerController.value.aspectRatio,
+                child: VideoPlayer(chewieController.videoPlayerController),
+              ),
             ),
           ),
-          chewieController.overlay ?? Container(),
+          if (chewieController.overlay != null) chewieController.overlay!,
           if (Theme.of(context).platform != TargetPlatform.iOS)
             Consumer<PlayerNotifier>(
               builder: (
@@ -52,14 +63,17 @@ class PlayerWithControls extends StatelessWidget {
                 PlayerNotifier notifier,
                 Widget? widget,
               ) =>
-                  AnimatedOpacity(
-                opacity: notifier.hideStuff ? 0.0 : 0.8,
-                duration: const Duration(
-                  milliseconds: 250,
-                ),
-                child: Container(
-                  decoration: const BoxDecoration(color: Colors.black54),
-                  child: Container(),
+                  Visibility(
+                visible: !notifier.hideStuff,
+                child: AnimatedOpacity(
+                  opacity: notifier.hideStuff ? 0.0 : 0.8,
+                  duration: const Duration(
+                    milliseconds: 250,
+                  ),
+                  child: Container(
+                    decoration: const BoxDecoration(color: Colors.black54),
+                    child: Container(),
+                  ),
                 ),
               ),
             ),

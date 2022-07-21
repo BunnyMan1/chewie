@@ -1,8 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 import '../src/chewie_progress_colors.dart';
+
 
 class VideoProgressBar extends StatefulWidget {
   VideoProgressBar(
@@ -29,6 +31,7 @@ class VideoProgressBar extends StatefulWidget {
   final bool drawShadow;
 
   @override
+  // ignore: library_private_types_in_public_api
   _VideoProgressBarState createState() {
     return _VideoProgressBarState();
   }
@@ -82,7 +85,15 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
         if (!controller.value.isInitialized) {
           return;
         }
-        _seekToRelativePosition(details.globalPosition);
+        // Should only seek if it's not running on Android, or if it is,
+        // then the VideoPlayerController cannot be buffering.
+        // On Android, we need to let the player buffer when scrolling
+        // in order to let the player buffer. https://github.com/flutter/flutter/issues/101409
+        final shouldSeekToRelativePosition =
+            !Platform.isAndroid || !controller.value.isBuffering;
+        if (shouldSeekToRelativePosition) {
+          _seekToRelativePosition(details.globalPosition);
+        }
 
         widget.onDragUpdate?.call();
       },
@@ -187,7 +198,7 @@ class _ProgressBarPainter extends CustomPainter {
     );
 
     if (drawShadow) {
-      final shadowPath = Path()
+      final Path shadowPath = Path()
         ..addOval(
           Rect.fromCircle(
             center: Offset(playedPart, baseOffset + barHeight / 2),

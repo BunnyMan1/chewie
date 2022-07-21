@@ -1,5 +1,5 @@
+import '../../models/option_item.dart';
 import 'package:flutter/material.dart';
-import '../models/option_item.dart';
 
 class OptionsDialog extends StatefulWidget {
   const OptionsDialog({
@@ -12,6 +12,7 @@ class OptionsDialog extends StatefulWidget {
   final String? cancelButtonText;
 
   @override
+  // ignore: library_private_types_in_public_api
   _OptionsDialogState createState() => _OptionsDialogState();
 }
 
