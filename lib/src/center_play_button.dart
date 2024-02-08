@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 class CenterPlayButton extends StatelessWidget {
   const CenterPlayButton({
     Key? key,
-    required this.backgroundColor,
     this.iconColor,
     required this.show,
     required this.isPlaying,
@@ -12,7 +11,6 @@ class CenterPlayButton extends StatelessWidget {
     this.onPressed,
   }) : super(key: key);
 
-  final Color backgroundColor;
   final Color? iconColor;
   final bool show;
   final bool isPlaying, isFinished;

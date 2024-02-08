@@ -97,11 +97,13 @@ class _CupertinoControlsState extends State<CupertinoControls>
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                _buildTopBar(backgroundColor, iconColor, barHeight, buttonPadding),
+                _buildTopBar(
+                    backgroundColor, iconColor, barHeight, buttonPadding),
                 const Spacer(),
                 if (_subtitleOn)
                   Transform.translate(
-                    offset: Offset(0.0, notifier.hideStuff ? barHeight * 0.8 : 0.0),
+                    offset:
+                        Offset(0.0, notifier.hideStuff ? barHeight * 0.8 : 0.0),
                     child: _buildSubtitles(chewieController.subtitle!),
                   ),
                 if (!chewieController.isFirstPlay)
@@ -165,7 +167,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
       child: Container(
         padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
-            color: const Color(0x96000000), borderRadius: BorderRadius.circular(10.0)),
+            color: const Color(0x96000000),
+            borderRadius: BorderRadius.circular(10.0)),
         child: Text(
           currentSubtitle.first!.text.toString(),
           style: const TextStyle(
@@ -294,7 +297,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
                 });
               },
         child: CenterPlayButton(
-          backgroundColor: widget.backgroundColor,
           iconColor: widget.iconColor,
           isFinished: isFinished,
           isPlaying: controller.value.isPlaying,
@@ -573,7 +575,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     // final bool isFinished = _latestValue.position >= _latestValue.duration;
-    final bool showClose = widget.onClose != null && !chewieController.isFirstPlay;
+    final bool showClose =
+        widget.onClose != null && !chewieController.isFirstPlay;
     return Container(
       height: barHeight,
       margin: EdgeInsets.only(
@@ -585,15 +588,19 @@ class _CupertinoControlsState extends State<CupertinoControls>
         children: <Widget>[
           if (chewieController.allowFullScreen &&
               (!chewieController.fullScreenByDefault ||
-                  (chewieController.fullScreenByDefault && !chewieController.isFirstPlay)))
+                  (chewieController.fullScreenByDefault &&
+                      !chewieController.isFirstPlay)))
             // if (chewieController.allowFullScreen)
-            _buildExpandButton(backgroundColor, iconColor, barHeight, buttonPadding),
+            _buildExpandButton(
+                backgroundColor, iconColor, barHeight, buttonPadding),
           if (showClose) const Spacer(),
           if (showClose)
-            _buildCloseButton(controller, backgroundColor, iconColor, barHeight, buttonPadding),
+            _buildCloseButton(controller, backgroundColor, iconColor, barHeight,
+                buttonPadding),
           if (chewieController.allowMuting) const Spacer(),
           if (chewieController.allowMuting)
-            _buildMuteButton(controller, backgroundColor, iconColor, barHeight, buttonPadding),
+            _buildMuteButton(controller, backgroundColor, iconColor, barHeight,
+                buttonPadding),
         ],
       ),
     );
@@ -721,14 +728,16 @@ class _CupertinoControlsState extends State<CupertinoControls>
   void _skipBack() {
     _cancelAndRestartTimer();
     final beginning = const Duration().inMilliseconds;
-    final skip = (_latestValue.position - const Duration(seconds: 15)).inMilliseconds;
+    final skip =
+        (_latestValue.position - const Duration(seconds: 15)).inMilliseconds;
     controller.seekTo(Duration(milliseconds: math.max(skip, beginning)));
   }
 
   void _skipForward() {
     _cancelAndRestartTimer();
     final end = _latestValue.duration.inMilliseconds;
-    final skip = (_latestValue.position + const Duration(seconds: 15)).inMilliseconds;
+    final skip =
+        (_latestValue.position + const Duration(seconds: 15)).inMilliseconds;
     controller.seekTo(Duration(milliseconds: math.min(skip, end)));
   }
 
@@ -753,7 +762,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
       if (isFinished) {
         if (chewieController.isFirstPlay) {
           chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault && chewieController.isFullScreen) {
+          if (chewieController.fullScreenByDefault &&
+              chewieController.isFullScreen) {
             chewieController.exitFullScreen();
           }
         }
@@ -789,7 +799,8 @@ class _PlaybackSpeedDialog extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (e == _selected) Icon(Icons.check, size: 20.0, color: selectedColor),
+                  if (e == _selected)
+                    Icon(Icons.check, size: 20.0, color: selectedColor),
                   Text(e.toString()),
                 ],
               ),
