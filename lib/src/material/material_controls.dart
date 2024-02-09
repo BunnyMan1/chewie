@@ -146,7 +146,8 @@ class _MaterialControlsState extends State<MaterialControls>
     final isFinished = _latestValue.position >= _latestValue.duration;
     final showFullscreen = chewieController.allowFullScreen &&
         (!chewieController.fullScreenByDefault ||
-            (chewieController.fullScreenByDefault && !chewieController.isFirstPlay)) &&
+            (chewieController.fullScreenByDefault &&
+                !chewieController.isFirstPlay)) &&
         !isFinished;
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
@@ -359,7 +360,9 @@ class _MaterialControlsState extends State<MaterialControls>
             right: 8.0,
           ),
           child: Icon(
-            chewieController.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+            chewieController.isFullScreen
+                ? Icons.fullscreen_exit
+                : Icons.fullscreen,
             color: Colors.white,
           ),
         ),
@@ -460,7 +463,7 @@ class _MaterialControlsState extends State<MaterialControls>
                   }
                 },
                 child: CenterPlayButton(
-                  backgroundColor: Colors.black54,
+                  backgroundColor: Colors.transparent,
                   iconColor: Colors.white,
                   isFinished: isFinished,
                   isPlaying: controller.value.isPlaying,
@@ -590,7 +593,8 @@ class _MaterialControlsState extends State<MaterialControls>
       notifier.hideStuff = true;
 
       chewieController.toggleFullScreen();
-      _showAfterExpandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
+      _showAfterExpandCollapseTimer =
+          Timer(const Duration(milliseconds: 300), () {
         setState(() {
           _cancelAndRestartTimer();
         });
@@ -641,7 +645,8 @@ class _MaterialControlsState extends State<MaterialControls>
       if (isFinished) {
         if (chewieController.isFirstPlay) {
           chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault && chewieController.isFullScreen) {
+          if (chewieController.fullScreenByDefault &&
+              chewieController.isFullScreen) {
             chewieController.exitFullScreen();
           }
         }
@@ -676,8 +681,10 @@ class _MaterialControlsState extends State<MaterialControls>
               ChewieProgressColors(
                 playedColor: Theme.of(context).colorScheme.secondary,
                 handleColor: Theme.of(context).colorScheme.secondary,
-                bufferedColor: Theme.of(context).colorScheme.background.withOpacity(0.5),
-                backgroundColor: Theme.of(context).disabledColor.withOpacity(.5),
+                bufferedColor:
+                    Theme.of(context).colorScheme.background.withOpacity(0.5),
+                backgroundColor:
+                    Theme.of(context).disabledColor.withOpacity(.5),
               ),
         ),
       );
