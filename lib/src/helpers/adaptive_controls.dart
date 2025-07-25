@@ -1,15 +1,10 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 import 'package:in_app_picture_in_picture/src/material/material_desktop_controls.dart';
 
 class AdaptiveControls extends StatelessWidget {
-  const AdaptiveControls({
-    required this.onClose,
-    Key? key,
-  }) : super(key: key);
-
-  final VoidCallback? onClose;
-
+  const AdaptiveControls({super.key});
   @override
   Widget build(BuildContext context) {
     switch (Theme.of(context).platform) {
@@ -30,8 +25,6 @@ class AdaptiveControls extends StatelessWidget {
           backgroundColor: const Color.fromRGBO(41, 41, 41, 0.7),
           iconColor: const Color.fromARGB(255, 200, 200, 200),
         );
-      default:
-        return const MaterialControls();
     }
   }
 }

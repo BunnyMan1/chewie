@@ -1,12 +1,13 @@
+import 'package:chewie/src/models/option_item.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 
 class OptionsDialog extends StatefulWidget {
   const OptionsDialog({
-    Key? key,
+    super.key,
     required this.options,
     this.cancelButtonText,
-  }) : super(key: key);
+  });
 
   final List<OptionItem> options;
   final String? cancelButtonText;
@@ -27,27 +28,24 @@ class _OptionsDialogState extends State<OptionsDialog> {
             itemCount: widget.options.length,
             itemBuilder: (context, i) {
               return ListTile(
-                onTap: widget.options[i].onTap,
+                onTap: () => widget.options[i].onTap(context),
                 leading: Icon(widget.options[i].iconData),
                 title: Text(widget.options[i].title),
-                subtitle: widget.options[i].subtitle != null
-                    ? Text(widget.options[i].subtitle!)
-                    : null,
+                subtitle:
+                    widget.options[i].subtitle != null
+                        ? Text(widget.options[i].subtitle!)
+                        : null,
               );
             },
           ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              thickness: 1.0,
-            ),
+            child: Divider(thickness: 1.0),
           ),
           ListTile(
             onTap: () => Navigator.pop(context),
             leading: const Icon(Icons.close),
-            title: Text(
-              widget.cancelButtonText ?? 'Cancel',
-            ),
+            title: Text(widget.cancelButtonText ?? 'Cancel'),
           ),
         ],
       ),
