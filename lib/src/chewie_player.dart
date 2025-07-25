@@ -2,23 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
+import 'package:in_app_picture_in_picture/src/player_with_controls.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:wakelock/wakelock.dart';
-
-import '../src/chewie_progress_colors.dart';
-import '../src/material/models/options_translation.dart';
-import '../src/models/subtitle_model.dart';
-import '../src/notifiers/player_notifier.dart';
-import '../src/player_with_controls.dart';
-import './material/models/option_item.dart';
 
 typedef ChewieRoutePageBuilder = Widget Function(
   BuildContext context,
   Animation<double> animation,
   Animation<double> secondaryAnimation,
-  _ChewieControllerProvider controllerProvider,
+  ChewieControllerProvider controllerProvider,
 );
 
 /// A Video Player with Material and Cupertino skins.
@@ -35,7 +29,7 @@ class Chewie extends StatefulWidget {
   /// The [ChewieController]
   final ChewieController controller;
 
-  final void Function(bool newState) onToggleFullscreen;
+  final void Function({bool newState}) onToggleFullscreen;
 
   @override
   ChewieState createState() {
@@ -76,110 +70,41 @@ class ChewieState extends State<Chewie> {
       // Navigator.of(context, rootNavigator: true).pop();
       _isFullScreen = false;
     }
-    widget.onToggleFullscreen(_isFullScreen);
+    widget.onToggleFullscreen(newState: _isFullScreen);
   }
 
   @override
   Widget build(BuildContext context) {
-    return _ChewieControllerProvider(
+    return ChewieControllerProvider(
       controller: widget.controller,
       child: ChangeNotifierProvider<PlayerNotifier>.value(
         value: notifier,
         builder: (context, w) => const PlayerWithControls(),
       ),
     );
-  }
-
-  Widget _buildFullScreenVideo(
-    BuildContext context,
-    Animation<double> animation,
-    _ChewieControllerProvider controllerProvider,
-  ) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Container(
-        alignment: Alignment.center,
-        color: Colors.black,
-        child: controllerProvider,
-      ),
-    );
-  }
-
-  AnimatedWidget _defaultRoutePageBuilder(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    _ChewieControllerProvider controllerProvider,
-  ) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget? child) {
-        return _buildFullScreenVideo(context, animation, controllerProvider);
-      },
-    );
-  }
-
-  Widget _fullScreenRoutePageBuilder(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
-    final controllerProvider = _ChewieControllerProvider(
-      controller: widget.controller,
-      child: ChangeNotifierProvider<PlayerNotifier>.value(
-        value: notifier,
-        builder: (context, w) => const PlayerWithControls(),
-      ),
-    );
-
-    if (widget.controller.routePageBuilder == null) {
-      return _defaultRoutePageBuilder(
-          context, animation, secondaryAnimation, controllerProvider);
-    }
-    return widget.controller.routePageBuilder!(
-        context, animation, secondaryAnimation, controllerProvider);
-  }
-
-  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
-    final TransitionRoute<void> route = PageRouteBuilder<void>(
-      pageBuilder: _fullScreenRoutePageBuilder,
-    );
-
-    onEnterFullScreen();
-
-    if (!widget.controller.allowedScreenSleep) {
-      Wakelock.enable();
-    }
-
-    await Navigator.of(context, rootNavigator: true).push(route);
-    _isFullScreen = false;
-    widget.controller.exitFullScreen();
-
-    // The wakelock plugins checks whether it needs to perform an action internally,
-    // so we do not need to check Wakelock.isEnabled.
-    Wakelock.disable();
-
-    SystemChrome.setEnabledSystemUIOverlays(widget.controller.systemOverlaysAfterFullScreen);
-    SystemChrome.setPreferredOrientations(widget.controller.deviceOrientationsAfterFullScreen);
   }
 
   void onEnterFullScreen() {
     final videoWidth = widget.controller.videoPlayerController.value.size.width;
-    final videoHeight = widget.controller.videoPlayerController.value.size.height;
+    final videoHeight =
+        widget.controller.videoPlayerController.value.size.height;
 
     if (widget.controller.systemOverlaysOnEnterFullScreen != null) {
       /// Optional user preferred settings
-      SystemChrome.setEnabledSystemUIOverlays(
-          widget.controller.systemOverlaysOnEnterFullScreen!);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: widget.controller.systemOverlaysOnEnterFullScreen,
+      );
     } else {
       /// Default behavior
-      SystemChrome.setEnabledSystemUIOverlays([]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     }
 
     if (widget.controller.deviceOrientationsOnEnterFullScreen != null) {
       /// Optional user preferred settings
       SystemChrome.setPreferredOrientations(
-          widget.controller.deviceOrientationsOnEnterFullScreen!);
+        widget.controller.deviceOrientationsOnEnterFullScreen ?? [],
+      );
     } else {
       final isLandscapeVideo = videoWidth > videoHeight;
       final isPortraitVideo = videoWidth < videoHeight;
@@ -256,8 +181,10 @@ class ChewieController extends ChangeNotifier {
     this.systemOverlaysAfterFullScreen = SystemUiOverlay.values,
     this.deviceOrientationsAfterFullScreen = DeviceOrientation.values,
     this.routePageBuilder,
-  }) : assert(playbackSpeeds.every((speed) => speed > 0),
-            'The playbackSpeeds values must all be greater than 0') {
+  }) : assert(
+          playbackSpeeds.every((speed) => speed > 0),
+          'The playbackSpeeds values must all be greater than 0',
+        ) {
     _initialize();
   }
 
@@ -295,12 +222,13 @@ class ChewieController extends ChangeNotifier {
     List<DeviceOrientation>? deviceOrientationsOnEnterFullScreen,
     List<SystemUiOverlay>? systemOverlaysAfterFullScreen,
     List<DeviceOrientation>? deviceOrientationsAfterFullScreen,
-    Widget Function(
-            BuildContext, Animation<double>, Animation<double>, _ChewieControllerProvider)?
+    Widget Function(BuildContext, Animation<double>, Animation<double>,
+            ChewieControllerProvider)?
         routePageBuilder,
   }) {
     return ChewieController(
-      videoPlayerController: videoPlayerController ?? this.videoPlayerController,
+      videoPlayerController:
+          videoPlayerController ?? this.videoPlayerController,
       optionsTranslation: optionsTranslation ?? this.optionsTranslation,
       aspectRatio: aspectRatio ?? this.aspectRatio,
       isFirstPlay: isFirstPlay ?? this.isFirstPlay,
@@ -308,15 +236,18 @@ class ChewieController extends ChangeNotifier {
       autoPlay: autoPlay ?? this.autoPlay,
       onCloseCallback: onCloseCallback ?? this.onCloseCallback,
       onInitialPlayCompletedCallBack:
-          onInitialPlayCompletedCallBack ?? this.onInitialPlayCompletedCallBack,
+          onInitialPlayCompletedCallBack ?? onInitialPlayCompletedCallBack,
       startAt: startAt ?? this.startAt,
       looping: looping ?? this.looping,
       fullScreenByDefault: fullScreenByDefault ?? this.fullScreenByDefault,
-      cupertinoProgressColors: cupertinoProgressColors ?? this.cupertinoProgressColors,
-      materialProgressColors: materialProgressColors ?? this.materialProgressColors,
+      cupertinoProgressColors:
+          cupertinoProgressColors ?? this.cupertinoProgressColors,
+      materialProgressColors:
+          materialProgressColors ?? this.materialProgressColors,
       placeholder: placeholder ?? this.placeholder,
       overlay: overlay ?? this.overlay,
-      showControlsOnInitialize: showControlsOnInitialize ?? this.showControlsOnInitialize,
+      showControlsOnInitialize:
+          showControlsOnInitialize ?? this.showControlsOnInitialize,
       showOptions: showOptions ?? this.showOptions,
       optionsBuilder: optionsBuilder ?? this.optionsBuilder,
       additionalOptions: additionalOptions ?? this.additionalOptions,
@@ -329,16 +260,18 @@ class ChewieController extends ChangeNotifier {
       isLive: isLive ?? this.isLive,
       allowFullScreen: allowFullScreen ?? this.allowFullScreen,
       allowMuting: allowMuting ?? this.allowMuting,
-      allowPlaybackSpeedChanging: allowPlaybackSpeedChanging ?? this.allowPlaybackSpeedChanging,
+      allowPlaybackSpeedChanging:
+          allowPlaybackSpeedChanging ?? this.allowPlaybackSpeedChanging,
       playbackSpeeds: playbackSpeeds ?? this.playbackSpeeds,
-      systemOverlaysOnEnterFullScreen:
-          systemOverlaysOnEnterFullScreen ?? this.systemOverlaysOnEnterFullScreen,
+      systemOverlaysOnEnterFullScreen: systemOverlaysOnEnterFullScreen ??
+          this.systemOverlaysOnEnterFullScreen,
       deviceOrientationsOnEnterFullScreen:
-          deviceOrientationsOnEnterFullScreen ?? this.deviceOrientationsOnEnterFullScreen,
+          deviceOrientationsOnEnterFullScreen ??
+              this.deviceOrientationsOnEnterFullScreen,
       systemOverlaysAfterFullScreen:
           systemOverlaysAfterFullScreen ?? this.systemOverlaysAfterFullScreen,
-      deviceOrientationsAfterFullScreen:
-          deviceOrientationsAfterFullScreen ?? this.deviceOrientationsAfterFullScreen,
+      deviceOrientationsAfterFullScreen: deviceOrientationsAfterFullScreen ??
+          this.deviceOrientationsAfterFullScreen,
       routePageBuilder: routePageBuilder ?? this.routePageBuilder,
     );
   }
@@ -367,14 +300,15 @@ class ChewieController extends ChangeNotifier {
   /// the builder method. Just add your own options to the Widget
   /// you'll build. If you want to hide the chewieOptions, just leave them
   /// out from your Widget.
-  final Future<void> Function(BuildContext context, List<OptionItem> chewieOptions)?
-      optionsBuilder;
+  final Future<void> Function(
+      BuildContext context, List<OptionItem> chewieOptions)? optionsBuilder;
 
   /// Add your own additional options on top of chewie options
   final List<OptionItem> Function(BuildContext context)? additionalOptions;
 
   /// Define here your own Widget on how your n'th subtitle will look like
-  final Widget Function(BuildContext context, dynamic subtitle)? subtitleBuilder;
+  final Widget Function(BuildContext context, dynamic subtitle)?
+      subtitleBuilder;
 
   /// Add a List of Subtitles here in `Subtitles.subtitle`
   Subtitles? subtitle;
@@ -406,7 +340,8 @@ class ChewieController extends ChangeNotifier {
 
   /// When the video playback runs into an error, you can build a custom
   /// error message.
-  final Widget Function(BuildContext context, String errorMessage)? errorBuilder;
+  final Widget Function(BuildContext context, String errorMessage)?
+      errorBuilder;
 
   /// The Aspect Ratio of the Video. Important to get the correct size of the
   /// video!
@@ -467,7 +402,7 @@ class ChewieController extends ChangeNotifier {
 
   static ChewieController of(BuildContext context) {
     final chewieControllerProvider =
-        context.dependOnInheritedWidgetOfExactType<_ChewieControllerProvider>()!;
+        context.dependOnInheritedWidgetOfExactType<ChewieControllerProvider>()!;
 
     return chewieControllerProvider.controller;
   }
@@ -481,7 +416,8 @@ class ChewieController extends ChangeNotifier {
   Future _initialize() async {
     await videoPlayerController.setLooping(looping);
 
-    if ((autoInitialize || autoPlay) && !videoPlayerController.value.isInitialized) {
+    if ((autoInitialize || autoPlay) &&
+        !videoPlayerController.value.isInitialized) {
       await videoPlayerController.initialize();
     }
 
@@ -524,14 +460,17 @@ class ChewieController extends ChangeNotifier {
   int _noOfTimesPlayed = 0;
 
   Future<void> _onInitialPlayCompleted() async {
-    if (onInitialPlayCompletedCallBack != null && _noOfTimesPlayed <= 1 && isFinished) {
+    if (onInitialPlayCompletedCallBack != null &&
+        _noOfTimesPlayed <= 1 &&
+        isFinished) {
       onInitialPlayCompletedCallBack!();
       videoPlayerController.removeListener(_onInitialPlayCompleted);
     }
   }
 
   bool get isFinished =>
-      videoPlayerController.value.position >= videoPlayerController.value.duration;
+      videoPlayerController.value.position >=
+      videoPlayerController.value.duration;
 
   void enterFullScreen({bool notify = true}) {
     _isFullScreen = true;
@@ -578,8 +517,8 @@ class ChewieController extends ChangeNotifier {
   }
 }
 
-class _ChewieControllerProvider extends InheritedWidget {
-  const _ChewieControllerProvider({
+class ChewieControllerProvider extends InheritedWidget {
+  const ChewieControllerProvider({
     Key? key,
     required this.controller,
     required Widget child,
@@ -588,5 +527,6 @@ class _ChewieControllerProvider extends InheritedWidget {
   final ChewieController controller;
 
   @override
-  bool updateShouldNotify(_ChewieControllerProvider old) => controller != old.controller;
+  bool updateShouldNotify(ChewieControllerProvider old) =>
+      controller != old.controller;
 }

@@ -1,21 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/src/animated_play_pause.dart';
+import 'package:in_app_picture_in_picture/src/center_play_button.dart';
+import 'package:in_app_picture_in_picture/src/helpers/utils.dart';
+import 'package:in_app_picture_in_picture/src/material/material_progress_bar.dart';
+import 'package:in_app_picture_in_picture/src/material/widgets/options_dialog.dart';
+import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-
-import '../../src/animated_play_pause.dart';
-import '../../src/center_play_button.dart';
-import '../../src/chewie_player.dart';
-import '../../src/chewie_progress_colors.dart';
-import '../../src/helpers/utils.dart';
-import '../../src/material/material_progress_bar.dart';
-import '../../src/material/models/option_item.dart';
-import '../../src/material/widgets/options_dialog.dart';
-import '../../src/models/subtitle_model.dart';
-import '../../src/notifiers/index.dart';
-
-import 'widgets/playback_speed_dialog.dart';
 
 class MaterialDesktopControls extends StatefulWidget {
   const MaterialDesktopControls({Key? key}) : super(key: key);
@@ -33,7 +27,7 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
   double? _latestVolume;
   Timer? _hideTimer;
   Timer? _initTimer;
-  late var _subtitlesPosition = const Duration();
+  late var _subtitlesPosition = Duration.zero;
   bool _subtitleOn = false;
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
@@ -90,8 +84,10 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
                 children: <Widget>[
                   if (_subtitleOn)
                     Transform.translate(
-                      offset: Offset(0.0, notifier.hideStuff ? barHeight * 0.8 : 0.0),
-                      child: _buildSubtitles(context, chewieController.subtitle!),
+                      offset: Offset(
+                          0.0, notifier.hideStuff ? barHeight * 0.8 : 0.0),
+                      child:
+                          _buildSubtitles(context, chewieController.subtitle!),
                     ),
                   _buildBottomBar(context),
                 ],
@@ -118,11 +114,11 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
 
   @override
   void didChangeDependencies() {
-    final _oldController = _chewieController;
+    final oldController = _chewieController;
     _chewieController = ChewieController.of(context);
     controller = chewieController.videoPlayerController;
 
-    if (_oldController != chewieController) {
+    if (oldController != chewieController) {
       _dispose();
       _initialize();
     }
@@ -138,22 +134,27 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
       OptionItem(
         onTap: () async {
           Navigator.pop(context);
-          _onSpeedButtonTap();
+          await _onSpeedButtonTap();
         },
         iconData: Icons.speed,
-        title: chewieController.optionsTranslation?.playbackSpeedButtonText ?? 'Playback speed',
-      )
+        title: chewieController.optionsTranslation?.playbackSpeedButtonText ??
+            'Playback speed',
+      ),
     ];
 
-    if (chewieController.subtitle != null && chewieController.subtitle!.isNotEmpty) {
+    if (chewieController.subtitle != null &&
+        chewieController.subtitle!.isNotEmpty) {
       options.add(
         OptionItem(
           onTap: () {
             _onSubtitleTap();
             Navigator.pop(context);
           },
-          iconData: _subtitleOn ? Icons.closed_caption : Icons.closed_caption_off_outlined,
-          title: chewieController.optionsTranslation?.subtitlesButtonText ?? 'Subtitles',
+          iconData: _subtitleOn
+              ? Icons.closed_caption
+              : Icons.closed_caption_off_outlined,
+          title: chewieController.optionsTranslation?.subtitlesButtonText ??
+              'Subtitles',
         ),
       );
     }
@@ -180,7 +181,8 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
               useRootNavigator: true,
               builder: (context) => OptionsDialog(
                 options: options,
-                cancelButtonText: chewieController.optionsTranslation?.cancelButtonText,
+                cancelButtonText:
+                    chewieController.optionsTranslation?.cancelButtonText,
               ),
             );
           }
@@ -235,14 +237,15 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
   AnimatedOpacity _buildBottomBar(
     BuildContext context,
   ) {
-    final iconColor = Theme.of(context).textTheme.button!.color;
+    final iconColor = Theme.of(context).textTheme.labelLarge!.color;
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
         height: barHeight + (chewieController.isFullScreen ? 20.0 : 0),
-        padding: EdgeInsets.only(bottom: chewieController.isFullScreen ? 10.0 : 15),
+        padding:
+            EdgeInsets.only(bottom: chewieController.isFullScreen ? 10.0 : 15),
         child: SafeArea(
           bottom: chewieController.isFullScreen,
           child: Column(
@@ -260,7 +263,8 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
                     else
                       _buildPosition(iconColor),
                     const Spacer(),
-                    if (chewieController.showOptions) _buildOptionsButton(icon: Icons.settings),
+                    if (chewieController.showOptions)
+                      _buildOptionsButton(icon: Icons.settings),
                     if (chewieController.allowFullScreen) _buildExpandButton(),
                   ],
                 ),
@@ -302,7 +306,9 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
           ),
           child: Center(
             child: Icon(
-              chewieController.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+              chewieController.isFullScreen
+                  ? Icons.fullscreen_exit
+                  : Icons.fullscreen,
               color: Colors.white,
             ),
           ),
@@ -470,7 +476,8 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
       notifier.hideStuff = true;
 
       chewieController.toggleFullScreen();
-      _showAfterExpandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
+      _showAfterExpandCollapseTimer =
+          Timer(const Duration(milliseconds: 300), () {
         setState(() {
           _cancelAndRestartTimer();
         });
@@ -495,7 +502,7 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
           });
         } else {
           if (isFinished) {
-            controller.seekTo(const Duration());
+            controller.seekTo(Duration.zero);
           }
           controller.play();
         }
@@ -539,10 +546,12 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
         },
         colors: chewieController.materialProgressColors ??
             ChewieProgressColors(
-              playedColor: Theme.of(context).accentColor,
-              handleColor: Theme.of(context).accentColor,
-              bufferedColor: Theme.of(context).backgroundColor.withOpacity(0.5),
-              backgroundColor: Theme.of(context).disabledColor.withOpacity(.5),
+              playedColor: Theme.of(context).colorScheme.secondary,
+              handleColor: Theme.of(context).colorScheme.secondary,
+              bufferedColor:
+                  Theme.of(context).colorScheme.surface.withAlphaOpacity(0.5),
+              backgroundColor:
+                  Theme.of(context).disabledColor.withAlphaOpacity(.5),
             ),
       ),
     );

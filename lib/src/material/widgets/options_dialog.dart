@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/option_item.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 
 class OptionsDialog extends StatefulWidget {
   const OptionsDialog({
@@ -12,7 +12,7 @@ class OptionsDialog extends StatefulWidget {
   final String? cancelButtonText;
 
   @override
-  _OptionsDialogState createState() => _OptionsDialogState();
+  State<OptionsDialog> createState() => _OptionsDialogState();
 }
 
 class _OptionsDialogState extends State<OptionsDialog> {
@@ -27,7 +27,7 @@ class _OptionsDialogState extends State<OptionsDialog> {
             itemCount: widget.options.length,
             itemBuilder: (context, i) {
               return ListTile(
-                onTap: widget.options[i].onTap != null ? widget.options[i].onTap! : null,
+                onTap: widget.options[i].onTap,
                 leading: Icon(widget.options[i].iconData),
                 title: Text(widget.options[i].title),
                 subtitle: widget.options[i].subtitle != null

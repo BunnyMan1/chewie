@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/src/helpers/adaptive_controls.dart';
+import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import '../src/chewie_player.dart';
-import '../src/helpers/adaptive_controls.dart';
-import '../src/notifiers/index.dart';
 
 class PlayerWithControls extends StatelessWidget {
   const PlayerWithControls({Key? key}) : super(key: key);
@@ -13,7 +12,7 @@ class PlayerWithControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final ChewieController chewieController = ChewieController.of(context);
 
-    double _calculateAspectRatio(BuildContext context) {
+    double calculateAspectRatio(BuildContext context) {
       final size = MediaQuery.of(context).size;
       final width = size.width;
       final height = size.height;
@@ -21,7 +20,7 @@ class PlayerWithControls extends StatelessWidget {
       return width > height ? width / height : height / width;
     }
 
-    Widget _buildControls(
+    Widget buildControls(
       BuildContext context,
       ChewieController chewieController,
     ) {
@@ -33,7 +32,8 @@ class PlayerWithControls extends StatelessWidget {
           : Container();
     }
 
-    Widget _buildPlayerWithControls(ChewieController chewieController, BuildContext context) {
+    Widget buildPlayerWithControls(
+        ChewieController chewieController, BuildContext context) {
       return Stack(
         children: <Widget>[
           chewieController.placeholder ?? Container(),
@@ -64,12 +64,12 @@ class PlayerWithControls extends StatelessWidget {
               ),
             ),
           if (!chewieController.isFullScreen)
-            _buildControls(context, chewieController)
+            buildControls(context, chewieController)
           else
             SafeArea(
               bottom: false,
               top: false,
-              child: _buildControls(context, chewieController),
+              child: buildControls(context, chewieController),
             ),
         ],
       );
@@ -80,8 +80,8 @@ class PlayerWithControls extends StatelessWidget {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         child: AspectRatio(
-          aspectRatio: _calculateAspectRatio(context),
-          child: _buildPlayerWithControls(chewieController, context),
+          aspectRatio: calculateAspectRatio(context),
+          child: buildPlayerWithControls(chewieController, context),
         ),
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 String formatDuration(Duration position) {
   final ms = position.inMilliseconds;
 
@@ -29,4 +31,11 @@ String formatDuration(Duration position) {
       '${hoursString == '00' ? '' : '$hoursString:'}$minutesString:$secondsString';
 
   return formattedTime;
+}
+
+extension ColorOpacity on Color {
+  Color withAlphaOpacity(double opacity) {
+    assert(opacity >= 0.0 && opacity <= 1.0);
+    return withValues(alpha: opacity);
+  }
 }
