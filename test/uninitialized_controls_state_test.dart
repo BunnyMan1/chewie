@@ -1,7 +1,7 @@
-import 'package:chewie/chewie.dart';
-import 'package:chewie/src/center_play_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/src/center_play_button.dart';
 import 'package:video_player/video_player.dart';
 
 List<String> srcs = [
@@ -24,7 +24,7 @@ void main() {
       customControls: MaterialControls(key: materialControlsKey),
     );
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: Chewie(controller: chewieController))),
+      MaterialApp(home: Scaffold(body: Chewie(controller: chewieController, onToggleFullscreen: ({bool? newState}) {  },))),
     );
 
     await tester.pump();
@@ -53,7 +53,7 @@ void main() {
       ),
     );
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: Chewie(controller: chewieController))),
+      MaterialApp(home: Scaffold(body: Chewie(controller: chewieController, onToggleFullscreen: ({bool? newState}) {  },))),
     );
 
     await tester.pump();
@@ -80,7 +80,7 @@ void main() {
       customControls: MaterialDesktopControls(key: materialControlsKey),
     );
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: Chewie(controller: chewieController))),
+      MaterialApp(home: Scaffold(body: Chewie(controller: chewieController, onToggleFullscreen: ({bool? newState}) {  },))),
     );
 
     await tester.pump();

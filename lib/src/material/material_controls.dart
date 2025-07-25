@@ -1,24 +1,16 @@
 import 'dart:async';
 
-import 'package:chewie/src/center_play_button.dart';
-import 'package:chewie/src/center_seek_button.dart';
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/chewie_progress_colors.dart';
-import 'package:chewie/src/helpers/utils.dart';
-import 'package:chewie/src/material/material_progress_bar.dart';
-import 'package:chewie/src/material/widgets/options_dialog.dart';
-import 'package:chewie/src/material/widgets/playback_speed_dialog.dart';
-import 'package:chewie/src/models/option_item.dart';
-import 'package:chewie/src/models/subtitle_model.dart';
-import 'package:chewie/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 import 'package:in_app_picture_in_picture/src/center_play_button.dart';
 import 'package:in_app_picture_in_picture/src/helpers/utils.dart';
-import 'package:in_app_picture_in_picture/src/material/material_progress_bar.dart';
 import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+
+import '../center_seek_button.dart';
+import 'widgets/options_dialog.dart';
+import 'widgets/playback_speed_dialog.dart';
 
 class MaterialControls extends StatefulWidget {
   const MaterialControls({this.showPlayButton = true, super.key});
@@ -38,8 +30,8 @@ class _MaterialControlsState extends State<MaterialControls>
   double? _latestVolume;
   Timer? _hideTimer;
   Timer? _initTimer;
-  late var _subtitlesPosition = Duration.zero;
-  bool _subtitleOn = false;
+  late var subtitlesPosition = Duration.zero;
+  bool subtitleOn = false;
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
   bool _displayTapped = false;
@@ -92,7 +84,7 @@ class _MaterialControlsState extends State<MaterialControls>
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  if (_subtitleOn)
+                  if (subtitleOn)
                     Transform.translate(
                       offset: Offset(
                         0.0,
@@ -217,10 +209,10 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildSubtitles(BuildContext context, Subtitles subtitles) {
-    if (!_subtitleOn) {
+    if (!subtitleOn) {
       return const SizedBox();
     }
-    final currentSubtitle = subtitles.getByPosition(_subtitlesPosition);
+    final currentSubtitle = subtitles.getByPosition(subtitlesPosition);
     if (currentSubtitle.isEmpty) {
       return const SizedBox();
     }
@@ -483,10 +475,8 @@ class _MaterialControlsState extends State<MaterialControls>
         color: Colors.transparent,
         padding: const EdgeInsets.only(left: 12.0, right: 12.0),
         child: Icon(
-          _subtitleOn
-              ? Icons.closed_caption
-              : Icons.closed_caption_off_outlined,
-          color: _subtitleOn ? Colors.white : Colors.grey[700],
+          subtitleOn ? Icons.closed_caption : Icons.closed_caption_off_outlined,
+          color: subtitleOn ? Colors.white : Colors.grey[700],
         ),
       ),
     );
@@ -494,7 +484,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _onSubtitleTap() {
     setState(() {
-      _subtitleOn = !_subtitleOn;
+      subtitleOn = !subtitleOn;
     });
   }
 
@@ -509,7 +499,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Future<void> _initialize() async {
-    _subtitleOn =
+    subtitleOn =
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
@@ -665,32 +655,33 @@ class _MaterialControlsState extends State<MaterialControls>
               _dragging = true;
             });
 
-          _hideTimer?.cancel();
-        },
-        onDragUpdate: () {
-          _hideTimer?.cancel();
-        },
-        onDragEnd: () {
-          setState(() {
-            _dragging = false;
-          });
+            _hideTimer?.cancel();
+          },
+          onDragUpdate: () {
+            _hideTimer?.cancel();
+          },
+          onDragEnd: () {
+            setState(() {
+              _dragging = false;
+            });
 
-          _startHideTimer();
-        },
-        colors:
-            chewieController.materialProgressColors ??
-            ChewieProgressColors(
-              playedColor: Theme.of(context).colorScheme.secondary,
-              handleColor: Theme.of(context).colorScheme.secondary,
-              bufferedColor: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.5),
-              backgroundColor: Theme.of(
-                context,
-              ).disabledColor.withValues(alpha: .5),
-            ),
-        draggableProgressBar: chewieController.draggableProgressBar,
-      ),
-    );
+            _startHideTimer();
+          },
+          colors:
+              chewieController.materialProgressColors ??
+              ChewieProgressColors(
+                playedColor: Theme.of(context).colorScheme.secondary,
+                handleColor: Theme.of(context).colorScheme.secondary,
+                bufferedColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.5),
+                backgroundColor: Theme.of(
+                  context,
+                ).disabledColor.withValues(alpha: .5),
+              ),
+          draggableProgressBar: chewieController.draggableProgressBar,
+        ),
+      );
+    }
   }
 }

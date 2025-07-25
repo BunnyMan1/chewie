@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../in_app_picture_in_picture.dart';
+import '../progress_bar.dart';
+
 class MaterialVideoProgressBar extends StatelessWidget {
   MaterialVideoProgressBar(
     this.controller, {

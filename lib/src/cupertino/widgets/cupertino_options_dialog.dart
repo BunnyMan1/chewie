@@ -1,5 +1,5 @@
-import 'package:chewie/src/models/option_item.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 
 class CupertinoOptionsDialog extends StatefulWidget {
   const CupertinoOptionsDialog({
@@ -12,8 +12,9 @@ class CupertinoOptionsDialog extends StatefulWidget {
   final String? cancelButtonText;
 
   @override
-  // ignore: library_private_types_in_public_api
-  _CupertinoOptionsDialogState createState() => _CupertinoOptionsDialogState();
+  State<CupertinoOptionsDialog> createState() {
+    return _CupertinoOptionsDialogState();
+  }
 }
 
 class _CupertinoOptionsDialogState extends State<CupertinoOptionsDialog> {

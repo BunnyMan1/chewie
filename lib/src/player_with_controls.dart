@@ -1,6 +1,3 @@
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/helpers/adaptive_controls.dart';
-import 'package:chewie/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 import 'package:in_app_picture_in_picture/src/helpers/adaptive_controls.dart';
@@ -85,7 +82,6 @@ class PlayerWithControls extends StatelessWidget {
           transformationController: chewieController.transformationController,
           maxScale: chewieController.maxScale,
           panEnabled: chewieController.zoomAndPan,
-                  : null,
           onInteractionEnd:
               chewieController.zoomAndPan
                   ? (_) => playerNotifier.hideStuff = false

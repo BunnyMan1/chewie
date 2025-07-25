@@ -1,25 +1,19 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:chewie/src/animated_play_pause.dart';
-import 'package:chewie/src/center_play_button.dart';
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/chewie_progress_colors.dart';
-import 'package:chewie/src/cupertino/cupertino_progress_bar.dart';
-import 'package:chewie/src/cupertino/widgets/cupertino_options_dialog.dart';
-import 'package:chewie/src/helpers/utils.dart';
-import 'package:chewie/src/models/option_item.dart';
-import 'package:chewie/src/models/subtitle_model.dart';
-import 'package:chewie/src/notifiers/index.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
-import 'package:in_app_picture_in_picture/src/animated_play_pause.dart';
-import 'package:in_app_picture_in_picture/src/center_play_button.dart';
-import 'package:in_app_picture_in_picture/src/cupertino/cupertino_progress_bar.dart';
-import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../in_app_picture_in_picture.dart';
+import '../animated_play_pause.dart';
+import '../center_play_button.dart';
+import '../helpers/utils.dart';
+import '../notifiers/index.dart';
+import 'cupertino_progress_bar.dart';
+import 'widgets/cupertino_options_dialog.dart';
 
 class CupertinoControls extends StatefulWidget {
   const CupertinoControls({
@@ -121,9 +115,10 @@ class _CupertinoControlsState extends State<CupertinoControls>
                       child: _buildSubtitles(chewieController.subtitle!),
                     ),
                   _buildBottomBar(backgroundColor, iconColor, barHeight),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -422,48 +417,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     );
   }
 
-  GestureDetector _buildCloseButton(
-    VideoPlayerController controller,
-    Color backgroundColor,
-    Color iconColor,
-    double barHeight,
-    double buttonPadding,
-  ) {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
-    return GestureDetector(
-      onTap: widget.onClose,
-      child: AnimatedOpacity(
-        opacity: isFinished
-            ? 1.0
-            : notifier.hideStuff
-                ? 0.0
-                : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: ColoredBox(
-              color: backgroundColor,
-              child: Container(
-                height: barHeight,
-                padding: EdgeInsets.only(
-                  left: buttonPadding,
-                  right: buttonPadding,
-                ),
-                child: Icon(
-                  Icons.close,
-                  color: iconColor,
-                  size: 16,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   GestureDetector _buildPlayPause(
     VideoPlayerController controller,
     Color iconColor,
@@ -613,8 +566,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    final bool showClose =
-        widget.onClose != null && !chewieController.isFirstPlay;
     return Container(
       height: barHeight,
       margin: EdgeInsets.only(

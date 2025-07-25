@@ -1,6 +1,7 @@
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+
+import '../in_app_picture_in_picture.dart';
 
 class VideoProgressBar extends StatefulWidget {
   VideoProgressBar(

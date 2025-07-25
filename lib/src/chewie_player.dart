@@ -1,17 +1,15 @@
 import 'dart:async';
 
-import 'package:chewie/src/chewie_progress_colors.dart';
-import 'package:chewie/src/models/option_item.dart';
-import 'package:chewie/src/models/options_translation.dart';
-import 'package:chewie/src/models/subtitle_model.dart';
-import 'package:chewie/src/notifiers/player_notifier.dart';
-import 'package:chewie/src/player_with_controls.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
+import '../in_app_picture_in_picture.dart';
+import 'notifiers/index.dart';
+import 'player_with_controls.dart';
 
 typedef ChewieRoutePageBuilder =
     Widget Function(
@@ -27,10 +25,10 @@ typedef ChewieRoutePageBuilder =
 /// make it easy to use!
 class Chewie extends StatefulWidget {
   const Chewie({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onToggleFullscreen,
-  }) : super(key: key);
+  });
 
   /// The [ChewieController]
   final ChewieController controller;
@@ -385,7 +383,7 @@ class ChewieController extends ChangeNotifier {
       isFirstPlay: isFirstPlay ?? this.isFirstPlay,
       autoInitialize: autoInitialize ?? this.autoInitialize,
       autoPlay: autoPlay ?? this.autoPlay,
-      onCloseCallback: onCloseCallback ?? this.onCloseCallback,
+      onCloseCallback: onCloseCallback ?? onCloseCallback,
       onInitialPlayCompletedCallBack:
           onInitialPlayCompletedCallBack ?? onInitialPlayCompletedCallBack,
       startAt: startAt ?? this.startAt,

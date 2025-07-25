@@ -1,4 +1,3 @@
-import 'package:chewie/src/models/option_item.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 
