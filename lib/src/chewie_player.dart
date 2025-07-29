@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
+import 'package:in_app_picture_in_picture/src/player_with_controls.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-
-import '../in_app_picture_in_picture.dart';
-import 'notifiers/index.dart';
-import 'player_with_controls.dart';
 
 typedef ChewieRoutePageBuilder =
     Widget Function(
@@ -24,16 +23,10 @@ typedef ChewieRoutePageBuilder =
 /// `video_player` is pretty low level. Chewie wraps it in a friendly skin to
 /// make it easy to use!
 class Chewie extends StatefulWidget {
-  const Chewie({
-    super.key,
-    required this.controller,
-    required this.onToggleFullscreen,
-  });
+  const Chewie({super.key, required this.controller});
 
   /// The [ChewieController]
   final ChewieController controller;
-
-  final void Function({bool newState}) onToggleFullscreen;
 
   @override
   ChewieState createState() {
@@ -83,7 +76,6 @@ class ChewieState extends State<Chewie> {
       ).pop();
       _isFullScreen = false;
     }
-    widget.onToggleFullscreen(newState: _isFullScreen);
   }
 
   @override
@@ -268,9 +260,6 @@ class ChewieController extends ChangeNotifier {
     required this.videoPlayerController,
     this.optionsTranslation,
     this.aspectRatio,
-    this.isFirstPlay = false,
-    this.onCloseCallback,
-    this.onInitialPlayCompletedCallBack,
     this.autoInitialize = false,
     this.autoPlay = false,
     this.draggableProgressBar = true,
@@ -324,7 +313,6 @@ class ChewieController extends ChangeNotifier {
     VideoPlayerController? videoPlayerController,
     OptionsTranslation? optionsTranslation,
     double? aspectRatio,
-    bool? isFirstPlay,
     bool? autoInitialize,
     bool? autoPlay,
     bool? draggableProgressBar,
@@ -380,12 +368,8 @@ class ChewieController extends ChangeNotifier {
           videoPlayerController ?? this.videoPlayerController,
       optionsTranslation: optionsTranslation ?? this.optionsTranslation,
       aspectRatio: aspectRatio ?? this.aspectRatio,
-      isFirstPlay: isFirstPlay ?? this.isFirstPlay,
       autoInitialize: autoInitialize ?? this.autoInitialize,
       autoPlay: autoPlay ?? this.autoPlay,
-      onCloseCallback: onCloseCallback ?? onCloseCallback,
-      onInitialPlayCompletedCallBack:
-          onInitialPlayCompletedCallBack ?? onInitialPlayCompletedCallBack,
       startAt: startAt ?? this.startAt,
       looping: looping ?? this.looping,
       fullScreenByDefault: fullScreenByDefault ?? this.fullScreenByDefault,
@@ -459,12 +443,6 @@ class ChewieController extends ChangeNotifier {
   ///
   /// These are required for the default `OptionItem`'s
   final OptionsTranslation? optionsTranslation;
-
-  bool isFirstPlay;
-
-  final VoidCallback? onCloseCallback;
-
-  final VoidCallback? onInitialPlayCompletedCallBack;
 
   /// Build your own options with default chewieOptions shiped through
   /// the builder method. Just add your own options to the Widget
@@ -642,7 +620,7 @@ class ChewieController extends ChangeNotifier {
 
     if (autoPlay) {
       if (fullScreenByDefault) {
-        // enterFullScreen();
+        enterFullScreen();
       }
 
       await videoPlayerController.play();
@@ -655,11 +633,6 @@ class ChewieController extends ChangeNotifier {
     if (fullScreenByDefault) {
       videoPlayerController.addListener(_fullScreenListener);
     }
-    if (onInitialPlayCompletedCallBack != null) {
-      videoPlayerController.addListener(_onInitialPlayCompleted);
-    }
-
-    videoPlayerController.addListener(_playBackIncrement);
   }
 
   Future<void> _fullScreenListener() async {
@@ -669,31 +642,9 @@ class ChewieController extends ChangeNotifier {
     }
   }
 
-  void _playBackIncrement() {
-    if (isFinished) {
-      _noOfTimesPlayed++;
-      // print(_noOfTimesPlayed);
-    }
-  }
-
-  int _noOfTimesPlayed = 0;
-
-  Future<void> _onInitialPlayCompleted() async {
-    if (onInitialPlayCompletedCallBack != null &&
-        _noOfTimesPlayed <= 1 &&
-        isFinished) {
-      onInitialPlayCompletedCallBack!();
-      videoPlayerController.removeListener(_onInitialPlayCompleted);
-    }
-  }
-
-  bool get isFinished =>
-      videoPlayerController.value.position >=
-      videoPlayerController.value.duration;
-
-  void enterFullScreen({bool notify = true}) {
+  void enterFullScreen() {
     _isFullScreen = true;
-    if (notify) notifyListeners();
+    notifyListeners();
   }
 
   void exitFullScreen() {

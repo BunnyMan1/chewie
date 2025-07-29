@@ -4,16 +4,15 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/src/animated_play_pause.dart';
+import 'package:in_app_picture_in_picture/src/center_play_button.dart';
+import 'package:in_app_picture_in_picture/src/cupertino/cupertino_progress_bar.dart';
+import 'package:in_app_picture_in_picture/src/cupertino/widgets/cupertino_options_dialog.dart';
+import 'package:in_app_picture_in_picture/src/helpers/utils.dart';
+import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-
-import '../../in_app_picture_in_picture.dart';
-import '../animated_play_pause.dart';
-import '../center_play_button.dart';
-import '../helpers/utils.dart';
-import '../notifiers/index.dart';
-import 'cupertino_progress_bar.dart';
-import 'widgets/cupertino_options_dialog.dart';
 
 class CupertinoControls extends StatefulWidget {
   const CupertinoControls({
@@ -575,10 +574,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
       ),
       child: Row(
         children: <Widget>[
-          if (chewieController.allowFullScreen &&
-              (!chewieController.fullScreenByDefault ||
-                  (chewieController.fullScreenByDefault &&
-                      !chewieController.isFirstPlay)))
+          if (chewieController.allowFullScreen)
             _buildExpandButton(
               backgroundColor,
               iconColor,
@@ -776,17 +772,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     setState(() {
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
-      final isFinished = _latestValue.position >= _latestValue.duration;
-      if (isFinished) {
-        if (chewieController.isFirstPlay) {
-          chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault &&
-              chewieController.isFullScreen) {
-            chewieController.exitFullScreen();
-          }
-        }
-        notifier.hideStuffNoState(false);
-      }
     });
   }
 }

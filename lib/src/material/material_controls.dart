@@ -3,14 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 import 'package:in_app_picture_in_picture/src/center_play_button.dart';
+import 'package:in_app_picture_in_picture/src/center_seek_button.dart';
 import 'package:in_app_picture_in_picture/src/helpers/utils.dart';
+import 'package:in_app_picture_in_picture/src/material/widgets/options_dialog.dart';
+import 'package:in_app_picture_in_picture/src/material/widgets/playback_speed_dialog.dart';
 import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-
-import '../center_seek_button.dart';
-import 'widgets/options_dialog.dart';
-import 'widgets/playback_speed_dialog.dart';
 
 class MaterialControls extends StatefulWidget {
   const MaterialControls({this.showPlayButton = true, super.key});
@@ -30,15 +29,14 @@ class _MaterialControlsState extends State<MaterialControls>
   double? _latestVolume;
   Timer? _hideTimer;
   Timer? _initTimer;
-  late var subtitlesPosition = Duration.zero;
-  bool subtitleOn = false;
+  late var _subtitlesPosition = Duration.zero;
+  bool _subtitleOn = false;
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
   bool _displayTapped = false;
   Timer? _bufferingDisplayTimer;
   bool _displayBufferingIndicator = false;
 
-  // final originalBarHeight = 48.0 * 1.25;
   final barHeight = 48.0 * 1.5;
   final marginSize = 5.0;
 
@@ -51,7 +49,6 @@ class _MaterialControlsState extends State<MaterialControls>
   @override
   void initState() {
     super.initState();
-    // print("Init stateeeeee");
     notifier = Provider.of<PlayerNotifier>(context, listen: false);
   }
 
@@ -84,7 +81,7 @@ class _MaterialControlsState extends State<MaterialControls>
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  if (subtitleOn)
+                  if (_subtitleOn)
                     Transform.translate(
                       offset: Offset(
                         0.0,
@@ -209,10 +206,10 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildSubtitles(BuildContext context, Subtitles subtitles) {
-    if (!subtitleOn) {
+    if (!_subtitleOn) {
       return const SizedBox();
     }
-    final currentSubtitle = subtitles.getByPosition(subtitlesPosition);
+    final currentSubtitle = subtitles.getByPosition(_subtitlesPosition);
     if (currentSubtitle.isEmpty) {
       return const SizedBox();
     }
@@ -459,6 +456,11 @@ class _MaterialControlsState extends State<MaterialControls>
             ),
           ),
         ],
+        style: const TextStyle(
+          fontSize: 14.0,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -475,8 +477,10 @@ class _MaterialControlsState extends State<MaterialControls>
         color: Colors.transparent,
         padding: const EdgeInsets.only(left: 12.0, right: 12.0),
         child: Icon(
-          subtitleOn ? Icons.closed_caption : Icons.closed_caption_off_outlined,
-          color: subtitleOn ? Colors.white : Colors.grey[700],
+          _subtitleOn
+              ? Icons.closed_caption
+              : Icons.closed_caption_off_outlined,
+          color: _subtitleOn ? Colors.white : Colors.grey[700],
         ),
       ),
     );
@@ -484,7 +488,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _onSubtitleTap() {
     setState(() {
-      subtitleOn = !subtitleOn;
+      _subtitleOn = !_subtitleOn;
     });
   }
 
@@ -499,7 +503,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Future<void> _initialize() async {
-    subtitleOn =
+    _subtitleOn =
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
@@ -626,62 +630,45 @@ class _MaterialControlsState extends State<MaterialControls>
 
     setState(() {
       _latestValue = controller.value;
-      subtitlesPosition = controller.value.position;
-      final isFinished = _latestValue.position >= _latestValue.duration;
-
-      if (isFinished) {
-        if (chewieController.isFirstPlay) {
-          chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault &&
-              chewieController.isFullScreen) {
-            chewieController.exitFullScreen();
-          }
-        }
-        notifier.hideStuffNoState(false);
-      }
+      _subtitlesPosition = controller.value.position;
     });
   }
 
   Widget _buildProgressBar() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
-    if (isFinished) {
-      return Container();
-    } else {
-      return Expanded(
-        child: MaterialVideoProgressBar(
-          controller,
-          onDragStart: () {
-            setState(() {
-              _dragging = true;
-            });
+    return Expanded(
+      child: MaterialVideoProgressBar(
+        controller,
+        onDragStart: () {
+          setState(() {
+            _dragging = true;
+          });
 
-            _hideTimer?.cancel();
-          },
-          onDragUpdate: () {
-            _hideTimer?.cancel();
-          },
-          onDragEnd: () {
-            setState(() {
-              _dragging = false;
-            });
+          _hideTimer?.cancel();
+        },
+        onDragUpdate: () {
+          _hideTimer?.cancel();
+        },
+        onDragEnd: () {
+          setState(() {
+            _dragging = false;
+          });
 
-            _startHideTimer();
-          },
-          colors:
-              chewieController.materialProgressColors ??
-              ChewieProgressColors(
-                playedColor: Theme.of(context).colorScheme.secondary,
-                handleColor: Theme.of(context).colorScheme.secondary,
-                bufferedColor: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.5),
-                backgroundColor: Theme.of(
-                  context,
-                ).disabledColor.withValues(alpha: .5),
-              ),
-          draggableProgressBar: chewieController.draggableProgressBar,
-        ),
-      );
-    }
+          _startHideTimer();
+        },
+        colors:
+            chewieController.materialProgressColors ??
+            ChewieProgressColors(
+              playedColor: Theme.of(context).colorScheme.secondary,
+              handleColor: Theme.of(context).colorScheme.secondary,
+              bufferedColor: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.5),
+              backgroundColor: Theme.of(
+                context,
+              ).disabledColor.withValues(alpha: .5),
+            ),
+        draggableProgressBar: chewieController.draggableProgressBar,
+      ),
+    );
   }
 }
