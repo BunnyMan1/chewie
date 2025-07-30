@@ -260,6 +260,8 @@ class ChewieController extends ChangeNotifier {
     required this.videoPlayerController,
     this.optionsTranslation,
     this.aspectRatio,
+    this.isFirstPlay = false,
+    this.onCloseCallback,
     this.autoInitialize = false,
     this.autoPlay = false,
     this.draggableProgressBar = true,
@@ -314,6 +316,8 @@ class ChewieController extends ChangeNotifier {
     OptionsTranslation? optionsTranslation,
     double? aspectRatio,
     bool? autoInitialize,
+    bool? isFirstPlay,
+    VoidCallback? onCloseCallback,
     bool? autoPlay,
     bool? draggableProgressBar,
     Duration? startAt,
@@ -367,6 +371,8 @@ class ChewieController extends ChangeNotifier {
       videoPlayerController:
           videoPlayerController ?? this.videoPlayerController,
       optionsTranslation: optionsTranslation ?? this.optionsTranslation,
+      onCloseCallback: onCloseCallback ?? this.onCloseCallback,
+      isFirstPlay: isFirstPlay ?? this.isFirstPlay,
       aspectRatio: aspectRatio ?? this.aspectRatio,
       autoInitialize: autoInitialize ?? this.autoInitialize,
       autoPlay: autoPlay ?? this.autoPlay,
@@ -433,6 +439,10 @@ class ChewieController extends ChangeNotifier {
   /// If false, the options button in MaterialUI and MaterialDesktopUI
   /// won't be shown.
   final bool showOptions;
+
+  bool isFirstPlay;
+
+  final VoidCallback? onCloseCallback;
 
   /// Pass your translations for the options like:
   /// - PlaybackSpeed

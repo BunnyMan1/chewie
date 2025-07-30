@@ -19,12 +19,14 @@ class CupertinoControls extends StatefulWidget {
     required this.backgroundColor,
     required this.iconColor,
     this.showPlayButton = true,
+    required this.onClose,
     super.key,
   });
 
   final Color backgroundColor;
   final Color iconColor;
   final bool showPlayButton;
+  final VoidCallback? onClose;
 
   @override
   State<StatefulWidget> createState() {
@@ -370,6 +372,45 @@ class _CupertinoControlsState extends State<CupertinoControls>
     );
   }
 
+  GestureDetector _buildCloseButton(
+    VideoPlayerController controller,
+    Color backgroundColor,
+    Color iconColor,
+    double barHeight,
+    double buttonPadding,
+  ) {
+    final bool isFinished = _latestValue.position >= _latestValue.duration;
+    return GestureDetector(
+      onTap: widget.onClose,
+      child: AnimatedOpacity(
+        opacity:
+            isFinished
+                ? 1.0
+                : notifier.hideStuff
+                ? 0.0
+                : 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10.0),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 10.0),
+            child: Container(
+              color: backgroundColor,
+              child: Container(
+                height: barHeight,
+                padding: EdgeInsets.only(
+                  left: buttonPadding,
+                  right: buttonPadding,
+                ),
+                child: Icon(Icons.close, color: iconColor, size: 16),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   GestureDetector _buildMuteButton(
     VideoPlayerController controller,
     Color backgroundColor,
@@ -574,6 +615,14 @@ class _CupertinoControlsState extends State<CupertinoControls>
       ),
       child: Row(
         children: <Widget>[
+          if (widget.onClose != null && !chewieController.isFirstPlay)
+            _buildCloseButton(
+              controller,
+              backgroundColor,
+              iconColor,
+              barHeight,
+              buttonPadding,
+            ),
           if (chewieController.allowFullScreen)
             _buildExpandButton(
               backgroundColor,
