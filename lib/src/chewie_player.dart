@@ -252,6 +252,7 @@ class ChewieController extends ChangeNotifier {
     this.aspectRatio,
     this.isFirstPlay = false,
     this.onCloseCallback,
+    this.onInitialPlayCompletedCallBack,
     this.autoInitialize = false,
     this.autoPlay = false,
     this.draggableProgressBar = true,
@@ -308,6 +309,7 @@ class ChewieController extends ChangeNotifier {
     bool? autoInitialize,
     bool? isFirstPlay,
     VoidCallback? onCloseCallback,
+    VoidCallback? onInitialPlayCompletedCallBack,
     bool? autoPlay,
     bool? draggableProgressBar,
     Duration? startAt,
@@ -362,6 +364,7 @@ class ChewieController extends ChangeNotifier {
           videoPlayerController ?? this.videoPlayerController,
       optionsTranslation: optionsTranslation ?? this.optionsTranslation,
       onCloseCallback: onCloseCallback ?? this.onCloseCallback,
+      onInitialPlayCompletedCallBack: onInitialPlayCompletedCallBack ?? this.onInitialPlayCompletedCallBack,
       isFirstPlay: isFirstPlay ?? this.isFirstPlay,
       aspectRatio: aspectRatio ?? this.aspectRatio,
       autoInitialize: autoInitialize ?? this.autoInitialize,
@@ -433,6 +436,9 @@ class ChewieController extends ChangeNotifier {
   bool isFirstPlay;
 
   final VoidCallback? onCloseCallback;
+
+  /// Callback for when the initial play is completed
+  final VoidCallback? onInitialPlayCompletedCallBack;
 
   /// Pass your translations for the options like:
   /// - PlaybackSpeed
@@ -605,6 +611,7 @@ class ChewieController extends ChangeNotifier {
   }
 
   bool _isFullScreen = false;
+  bool _hasPlayedOnce = false;
 
   bool get isFullScreen => _isFullScreen;
 
@@ -633,12 +640,24 @@ class ChewieController extends ChangeNotifier {
     if (fullScreenByDefault) {
       videoPlayerController.addListener(_fullScreenListener);
     }
+
+    // Add listener for initial play completion
+    videoPlayerController.addListener(_playListener);
   }
 
   Future<void> _fullScreenListener() async {
     if (videoPlayerController.value.isPlaying && !_isFullScreen) {
       enterFullScreen();
       videoPlayerController.removeListener(_fullScreenListener);
+    }
+  }
+
+  void _playListener() {
+    if (videoPlayerController.value.isPlaying && !_hasPlayedOnce) {
+      _hasPlayedOnce = true;
+      if (onInitialPlayCompletedCallBack != null) {
+        onInitialPlayCompletedCallBack!();
+      }
     }
   }
 
@@ -684,6 +703,12 @@ class ChewieController extends ChangeNotifier {
 
   void setSubtitle(List<Subtitle> newSubtitle) {
     subtitle = Subtitles(newSubtitle);
+  }
+
+  @override
+  void dispose() {
+    videoPlayerController.removeListener(_playListener);
+    super.dispose();
   }
 }
 

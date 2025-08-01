@@ -139,6 +139,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
   void _dispose() {
     controller.removeListener(_updateState);
+    _chewieController?.removeListener(_onControllerChange);
     _hideTimer?.cancel();
     _expandCollapseTimer?.cancel();
     _initTimer?.cancel();
@@ -156,6 +157,13 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
 
     super.didChangeDependencies();
+  }
+
+  void _onControllerChange() {
+    // This will trigger a rebuild when fullscreen state changes
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Widget _buildTopLeftCloseButton(
@@ -662,6 +670,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
+    chewieController.addListener(_onControllerChange);
 
     _updateState();
 

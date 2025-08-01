@@ -123,6 +123,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _dispose() {
     controller.removeListener(_updateState);
+    _chewieController?.removeListener(_onControllerChange);
     _hideTimer?.cancel();
     _initTimer?.cancel();
     _showAfterExpandCollapseTimer?.cancel();
@@ -140,6 +141,13 @@ class _MaterialControlsState extends State<MaterialControls>
     }
 
     super.didChangeDependencies();
+  }
+
+  void _onControllerChange() {
+    // This will trigger a rebuild when fullscreen state changes
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Widget _buildTopLeftCloseButton() {
@@ -548,6 +556,7 @@ class _MaterialControlsState extends State<MaterialControls>
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
+    chewieController.addListener(_onControllerChange);
 
     _updateState();
 
