@@ -35,7 +35,7 @@ class Chewie extends StatefulWidget {
 }
 
 class ChewieState extends State<Chewie> {
-  bool isFullScreen = false;
+  bool _isFullScreen = false;
 
   bool get isControllerFullScreen => widget.controller.isFullScreen;
   late PlayerNotifier notifier;
@@ -61,38 +61,21 @@ class ChewieState extends State<Chewie> {
       widget.controller.addListener(listener);
     }
     super.didUpdateWidget(oldWidget);
-    if (isFullScreen != isControllerFullScreen) {
-      widget.controller.isFullScreen == isFullScreen;
+    if (_isFullScreen != isControllerFullScreen) {
+      widget.controller._isFullScreen = _isFullScreen;
     }
   }
 
   Future<void> listener() async {
-    // Only handle Navigator-based fullscreen if allowFullScreen is true
-    if (!widget.controller.allowFullScreen) {
-      return;
-    }
-
-    if (isControllerFullScreen && !isFullScreen) {
-      isFullScreen = isControllerFullScreen;
-      try {
-        await _pushFullScreenWidget(context);
-      } catch (e) {
-        // If Navigator operation fails, silently handle it
-        debugPrint('Fullscreen navigation failed: $e');
-        isFullScreen = false;
-        widget.controller.exitFullScreen();
-      }
-    } else if (isFullScreen) {
-      try {
-        Navigator.of(
-          context,
-          rootNavigator: widget.controller.useRootNavigator,
-        ).pop();
-      } catch (e) {
-        // If Navigator operation fails, silently handle it
-        debugPrint('Fullscreen navigation pop failed: $e');
-      }
-      isFullScreen = false;
+    if (isControllerFullScreen && !_isFullScreen) {
+      _isFullScreen = isControllerFullScreen;
+      await _pushFullScreenWidget(context);
+    } else if (_isFullScreen) {
+      Navigator.of(
+        context,
+        rootNavigator: widget.controller.useRootNavigator,
+      ).pop();
+      _isFullScreen = false;
     }
   }
 
@@ -185,7 +168,7 @@ class ChewieState extends State<Chewie> {
       _reInitializeControllers();
     }
 
-    isFullScreen = false;
+    _isFullScreen = false;
     widget.controller.exitFullScreen();
 
     if (!widget.controller.allowedScreenSleep) {
@@ -632,8 +615,6 @@ class ChewieController extends ChangeNotifier {
 
   bool get isFullScreen => _isFullScreen;
 
-  void setIsFullScreen(bool value) => _isFullScreen = value;
-
   bool get isPlaying => videoPlayerController.value.isPlaying;
 
   Future<dynamic> _initialize() async {
@@ -665,7 +646,7 @@ class ChewieController extends ChangeNotifier {
   }
 
   Future<void> _fullScreenListener() async {
-    if (videoPlayerController.value.isPlaying && !_isFullScreen && allowFullScreen) {
+    if (videoPlayerController.value.isPlaying && !_isFullScreen) {
       enterFullScreen();
       videoPlayerController.removeListener(_fullScreenListener);
     }
@@ -682,23 +663,17 @@ class ChewieController extends ChangeNotifier {
 
   void enterFullScreen() {
     _isFullScreen = true;
-    if (allowFullScreen) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void exitFullScreen() {
     _isFullScreen = false;
-    if (allowFullScreen) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void toggleFullScreen() {
     _isFullScreen = !_isFullScreen;
-    if (allowFullScreen) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void togglePause() {

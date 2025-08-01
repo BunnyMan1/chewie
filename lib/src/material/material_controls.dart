@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 import 'package:in_app_picture_in_picture/src/center_play_button.dart';
-import 'package:in_app_picture_in_picture/src/center_seek_button.dart';
 import 'package:in_app_picture_in_picture/src/helpers/utils.dart';
 import 'package:in_app_picture_in_picture/src/material/widgets/options_dialog.dart';
 import 'package:in_app_picture_in_picture/src/material/widgets/playback_speed_dialog.dart';
@@ -16,14 +15,12 @@ class MaterialControls extends StatefulWidget {
     this.showPlayButton = true, 
     this.onClose, 
     this.onToggleFullscreen,
-    this.isCustomFullscreen = false,
     super.key
   });
 
   final bool showPlayButton;
   final VoidCallback? onClose;
   final void Function(bool isFullscreen)? onToggleFullscreen;
-  final bool isCustomFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -125,6 +122,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _dispose() {
     controller.removeListener(_updateState);
+    _chewieController?.removeListener(_onControllerChange);
     _hideTimer?.cancel();
     _initTimer?.cancel();
     _showAfterExpandCollapseTimer?.cancel();
@@ -142,6 +140,13 @@ class _MaterialControlsState extends State<MaterialControls>
     }
 
     super.didChangeDependencies();
+  }
+
+  void _onControllerChange() {
+    // This will trigger a rebuild when fullscreen state changes
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Widget _buildTopLeftCloseButton() {
@@ -288,15 +293,15 @@ class _MaterialControlsState extends State<MaterialControls>
       opacity: notifier.hideStuff ? 0.0 : 1.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
-        height: barHeight + (widget.isCustomFullscreen ? 10.0 : 0),
+        height: barHeight + (chewieController.isFullScreen ? 10.0 : 0),
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          bottom: !widget.isCustomFullscreen ? 10.0 : 0,
+          bottom: !chewieController.isFullScreen ? 10.0 : 0,
         ),
         child: SafeArea(
           top: false,
-          bottom: widget.isCustomFullscreen,
+          bottom: chewieController.isFullScreen,
           minimum: chewieController.controlsSafeAreaMinimum,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -313,11 +318,11 @@ class _MaterialControlsState extends State<MaterialControls>
                     if (chewieController.allowMuting)
                       _buildMuteButton(controller),
                     const Spacer(),
-                    _buildExpandButton(), // Always show the fullscreen button
+                    if (chewieController.allowFullScreen) _buildExpandButton(),
                   ],
                 ),
               ),
-              SizedBox(height: widget.isCustomFullscreen ? 15.0 : 0),
+              SizedBox(height: chewieController.isFullScreen ? 15.0 : 0),
               if (!chewieController.isLive)
                 Expanded(
                   child: Container(
@@ -368,12 +373,12 @@ class _MaterialControlsState extends State<MaterialControls>
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
         child: Container(
-          height: barHeight + (widget.isCustomFullscreen ? 15.0 : 0),
+          height: barHeight + (chewieController.isFullScreen ? 15.0 : 0),
           margin: const EdgeInsets.only(right: 12.0),
           padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: Center(
             child: Icon(
-              widget.isCustomFullscreen
+              chewieController.isFullScreen
                   ? Icons.fullscreen_exit
                   : Icons.fullscreen,
               color: Colors.white,
@@ -422,16 +427,7 @@ class _MaterialControlsState extends State<MaterialControls>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (!isFinished && !chewieController.isLive)
-              CenterSeekButton(
-                iconData: Icons.replay_10,
-                backgroundColor: Colors.black54,
-                iconColor: Colors.white,
-                show: showPlayButton,
-                fadeDuration: chewieController.materialSeekButtonFadeDuration,
-                iconSize: chewieController.materialSeekButtonSize,
-                onPressed: _seekBackward,
-              ),
+           
             Container(
               margin: EdgeInsets.symmetric(horizontal: marginSize),
               child: CenterPlayButton(
@@ -443,16 +439,7 @@ class _MaterialControlsState extends State<MaterialControls>
                 onPressed: _playPause,
               ),
             ),
-            if (!isFinished && !chewieController.isLive)
-              CenterSeekButton(
-                iconData: Icons.forward_10,
-                backgroundColor: Colors.black54,
-                iconColor: Colors.white,
-                show: showPlayButton,
-                fadeDuration: chewieController.materialSeekButtonFadeDuration,
-                iconSize: chewieController.materialSeekButtonSize,
-                onPressed: _seekForward,
-              ),
+           
           ],
         ),
       ),
@@ -550,6 +537,7 @@ class _MaterialControlsState extends State<MaterialControls>
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
+    chewieController.addListener(_onControllerChange);
 
     _updateState();
 
@@ -572,7 +560,10 @@ class _MaterialControlsState extends State<MaterialControls>
 
       // Call the toggle fullscreen callback if provided
       if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!widget.isCustomFullscreen);
+        widget.onToggleFullscreen!(!chewieController.isFullScreen);
+      } else {
+        // Fallback to default behavior
+        chewieController.toggleFullScreen();
       }
       
       _showAfterExpandCollapseTimer = Timer(
@@ -611,28 +602,6 @@ class _MaterialControlsState extends State<MaterialControls>
         }
       }
     });
-  }
-
-  void _seekRelative(Duration relativeSeek) {
-    _cancelAndRestartTimer();
-    final position = _latestValue.position + relativeSeek;
-    final duration = _latestValue.duration;
-
-    if (position < Duration.zero) {
-      controller.seekTo(Duration.zero);
-    } else if (position > duration) {
-      controller.seekTo(duration);
-    } else {
-      controller.seekTo(position);
-    }
-  }
-
-  void _seekBackward() {
-    _seekRelative(const Duration(seconds: -10));
-  }
-
-  void _seekForward() {
-    _seekRelative(const Duration(seconds: 10));
   }
 
   void _startHideTimer() {
