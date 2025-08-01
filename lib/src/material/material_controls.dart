@@ -16,12 +16,14 @@ class MaterialControls extends StatefulWidget {
     this.showPlayButton = true, 
     this.onClose, 
     this.onToggleFullscreen,
+    this.isCustomFullscreen = false,
     super.key
   });
 
   final bool showPlayButton;
   final VoidCallback? onClose;
   final void Function(bool isFullscreen)? onToggleFullscreen;
+  final bool isCustomFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -123,7 +125,6 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _dispose() {
     controller.removeListener(_updateState);
-    _chewieController?.removeListener(_onControllerChange);
     _hideTimer?.cancel();
     _initTimer?.cancel();
     _showAfterExpandCollapseTimer?.cancel();
@@ -141,13 +142,6 @@ class _MaterialControlsState extends State<MaterialControls>
     }
 
     super.didChangeDependencies();
-  }
-
-  void _onControllerChange() {
-    // This will trigger a rebuild when fullscreen state changes
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   Widget _buildTopLeftCloseButton() {
@@ -294,15 +288,15 @@ class _MaterialControlsState extends State<MaterialControls>
       opacity: notifier.hideStuff ? 0.0 : 1.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
-        height: barHeight + (chewieController.isFullScreen ? 10.0 : 0),
+        height: barHeight + (widget.isCustomFullscreen ? 10.0 : 0),
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          bottom: !chewieController.isFullScreen ? 10.0 : 0,
+          bottom: !widget.isCustomFullscreen ? 10.0 : 0,
         ),
         child: SafeArea(
           top: false,
-          bottom: chewieController.isFullScreen,
+          bottom: widget.isCustomFullscreen,
           minimum: chewieController.controlsSafeAreaMinimum,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -319,11 +313,11 @@ class _MaterialControlsState extends State<MaterialControls>
                     if (chewieController.allowMuting)
                       _buildMuteButton(controller),
                     const Spacer(),
-                    if (chewieController.allowFullScreen) _buildExpandButton(),
+                    _buildExpandButton(), // Always show the fullscreen button
                   ],
                 ),
               ),
-              SizedBox(height: chewieController.isFullScreen ? 15.0 : 0),
+              SizedBox(height: widget.isCustomFullscreen ? 15.0 : 0),
               if (!chewieController.isLive)
                 Expanded(
                   child: Container(
@@ -374,12 +368,12 @@ class _MaterialControlsState extends State<MaterialControls>
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
         child: Container(
-          height: barHeight + (chewieController.isFullScreen ? 15.0 : 0),
+          height: barHeight + (widget.isCustomFullscreen ? 15.0 : 0),
           margin: const EdgeInsets.only(right: 12.0),
           padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: Center(
             child: Icon(
-              chewieController.isFullScreen
+              widget.isCustomFullscreen
                   ? Icons.fullscreen_exit
                   : Icons.fullscreen,
               color: Colors.white,
@@ -556,7 +550,6 @@ class _MaterialControlsState extends State<MaterialControls>
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
-    chewieController.addListener(_onControllerChange);
 
     _updateState();
 
@@ -579,10 +572,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
       // Call the toggle fullscreen callback if provided
       if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!chewieController.isFullScreen);
-      } else {
-        // Fallback to default behavior
-        chewieController.toggleFullScreen();
+        widget.onToggleFullscreen!(!widget.isCustomFullscreen);
       }
       
       _showAfterExpandCollapseTimer = Timer(

@@ -21,6 +21,7 @@ class CupertinoControls extends StatefulWidget {
     this.showPlayButton = true,
     this.onClose,
     this.onToggleFullscreen,
+    this.isCustomFullscreen = false,
     super.key,
   });
 
@@ -29,6 +30,7 @@ class CupertinoControls extends StatefulWidget {
   final bool showPlayButton;
   final VoidCallback? onClose;
   final void Function(bool isFullscreen)? onToggleFullscreen;
+  final bool isCustomFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -139,7 +141,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
   void _dispose() {
     controller.removeListener(_updateState);
-    _chewieController?.removeListener(_onControllerChange);
     _hideTimer?.cancel();
     _expandCollapseTimer?.cancel();
     _initTimer?.cancel();
@@ -157,13 +158,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
 
     super.didChangeDependencies();
-  }
-
-  void _onControllerChange() {
-    // This will trigger a rebuild when fullscreen state changes
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   Widget _buildTopLeftCloseButton(
@@ -292,7 +286,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
   ) {
     return SafeArea(
-      bottom: chewieController.isFullScreen,
+      bottom: widget.isCustomFullscreen,
       minimum: chewieController.controlsSafeAreaMinimum,
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -378,7 +372,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
               color: backgroundColor,
               child: Center(
                 child: Icon(
-                  chewieController.isFullScreen
+                  widget.isCustomFullscreen
                       ? CupertinoIcons.arrow_down_right_arrow_up_left
                       : CupertinoIcons.arrow_up_left_arrow_down_right,
                   color: iconColor,
@@ -634,13 +628,12 @@ class _CupertinoControlsState extends State<CupertinoControls>
       child: Row(
         children: <Widget>[
           const Spacer(), // Push everything to the right
-          if (chewieController.allowFullScreen)
-            _buildExpandButton(
-              backgroundColor,
-              iconColor,
-              barHeight,
-              buttonPadding,
-            ),
+          _buildExpandButton(
+            backgroundColor,
+            iconColor,
+            barHeight,
+            buttonPadding,
+          ),
           const SizedBox(width: 10),
           if (chewieController.allowMuting)
             _buildMuteButton(
@@ -670,7 +663,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
     controller.addListener(_updateState);
-    chewieController.addListener(_onControllerChange);
 
     _updateState();
 
@@ -693,10 +685,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
       // Call the toggle fullscreen callback if provided
       if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!chewieController.isFullScreen);
-      } else {
-        // Fallback to default behavior
-        chewieController.toggleFullScreen();
+        widget.onToggleFullscreen!(!widget.isCustomFullscreen);
       }
       
       _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
