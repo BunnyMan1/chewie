@@ -12,10 +12,16 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 class MaterialControls extends StatefulWidget {
-  const MaterialControls({this.showPlayButton = true, this.onClose, super.key});
+  const MaterialControls({
+    this.showPlayButton = true, 
+    this.onClose, 
+    this.onToggleFullscreen,
+    super.key
+  });
 
   final bool showPlayButton;
   final VoidCallback? onClose;
+  final void Function(bool isFullscreen)? onToggleFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -78,19 +84,16 @@ class _MaterialControlsState extends State<MaterialControls>
                     const Center(child: CircularProgressIndicator())
               else
                 _buildHitArea(),
+              
+              // Top Left Close Button
+              _buildTopLeftCloseButton(),
+              
+              // Top Right Action Bar (Options, Subtitles)
               _buildActionBar(),
+              
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  if (widget.onClose != null && !chewieController.isFirstPlay)
-                    _buildIconbutton(
-                      onTap: closePlayer,
-                      showWhenFinshedPlayingVideo: true,
-                      icon: Icons.close,
-                      padding: const EdgeInsets.all(4),
-                      constraints: BoxConstraints(maxHeight: 36, maxWidth: 36),
-                      iconSize: 24,
-                    ),
                   if (_subtitleOn)
                     Transform.translate(
                       offset: Offset(
@@ -137,6 +140,34 @@ class _MaterialControlsState extends State<MaterialControls>
     }
 
     super.didChangeDependencies();
+  }
+
+  Widget _buildTopLeftCloseButton() {
+    if (widget.onClose == null) return const SizedBox.shrink();
+    
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: SafeArea(
+        child: AnimatedOpacity(
+          opacity: notifier.hideStuff ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 250),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.black54,
+              shape: BoxShape.circle,
+            ),
+            margin: const EdgeInsets.all(12.0),
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () {
+                widget.onClose?.call();
+              },
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildActionBar() {
@@ -426,62 +457,6 @@ class _MaterialControlsState extends State<MaterialControls>
     );
   }
 
-  Widget _buildIconbutton({
-    required VoidCallback onTap,
-    required IconData? icon,
-    bool showWhenFinshedPlayingVideo = false,
-    double iconSize = 32.0,
-    EdgeInsetsGeometry padding = const EdgeInsets.all(8.0),
-    bool alwayShow = false,
-    Widget? iconWidget,
-    BoxConstraints? constraints,
-  }) {
-    final isFinished = _latestValue.position >= _latestValue.duration;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        color: Colors.transparent,
-        child: Center(
-          child: AnimatedOpacity(
-            opacity:
-                alwayShow
-                    ? 1
-                    : showWhenFinshedPlayingVideo && isFinished
-                    ? 1.0
-                    : !_dragging && !notifier.hideStuff
-                    ? 1.0
-                    : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.black54,
-                shape: BoxShape.circle,
-              ),
-              child: Padding(
-                padding: padding,
-                // Always set the iconSize on the IconButton, not on the Icon itself:
-                // https://github.com/flutter/flutter/issues/52980
-                child:
-                    iconWidget ??
-                    IconButton(
-                      constraints: constraints,
-                      iconSize: iconSize,
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        icon,
-                        // size: iconSize,
-                        color: Colors.white,
-                      ),
-                      onPressed: onTap,
-                    ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _onSpeedButtonTap() async {
     _hideTimer?.cancel();
 
@@ -552,10 +527,6 @@ class _MaterialControlsState extends State<MaterialControls>
     );
   }
 
-  void closePlayer() {
-    widget.onClose!();
-  }
-
   void _onSubtitleTap() {
     setState(() {
       _subtitleOn = !_subtitleOn;
@@ -597,7 +568,14 @@ class _MaterialControlsState extends State<MaterialControls>
     setState(() {
       notifier.hideStuff = true;
 
-      chewieController.toggleFullScreen();
+      // Call the toggle fullscreen callback if provided
+      if (widget.onToggleFullscreen != null) {
+        widget.onToggleFullscreen!(!chewieController.isFullScreen);
+      } else {
+        // Fallback to default behavior
+        chewieController.toggleFullScreen();
+      }
+      
       _showAfterExpandCollapseTimer = Timer(
         const Duration(milliseconds: 300),
         () {

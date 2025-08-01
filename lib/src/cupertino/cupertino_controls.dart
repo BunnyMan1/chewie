@@ -19,7 +19,8 @@ class CupertinoControls extends StatefulWidget {
     required this.backgroundColor,
     required this.iconColor,
     this.showPlayButton = true,
-    required this.onClose,
+    this.onClose,
+    this.onToggleFullscreen,
     super.key,
   });
 
@@ -27,6 +28,7 @@ class CupertinoControls extends StatefulWidget {
   final Color iconColor;
   final bool showPlayButton;
   final VoidCallback? onClose;
+  final void Function(bool isFullscreen)? onToggleFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -97,6 +99,10 @@ class _CupertinoControlsState extends State<CupertinoControls>
                     const Center(child: CircularProgressIndicator())
               else
                 _buildHitArea(),
+              
+              // Top Left Close Button
+              _buildTopLeftCloseButton(backgroundColor, iconColor, barHeight, buttonPadding),
+              
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -150,6 +156,49 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
 
     super.didChangeDependencies();
+  }
+
+  Widget _buildTopLeftCloseButton(
+    Color backgroundColor,
+    Color iconColor,
+    double barHeight,
+    double buttonPadding,
+  ) {
+    if (widget.onClose == null) return const SizedBox.shrink();
+    
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: SafeArea(
+        child: AnimatedOpacity(
+          opacity: notifier.hideStuff ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 300),
+          child: Container(
+            margin: EdgeInsets.all(marginSize),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10.0),
+                child: Container(
+                  color: backgroundColor,
+                  child: Container(
+                    height: barHeight,
+                    padding: EdgeInsets.only(
+                      left: buttonPadding,
+                      right: buttonPadding,
+                    ),
+                    child: GestureDetector(
+                      onTap: widget.onClose,
+                      child: Icon(Icons.close, color: iconColor, size: 16),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   GestureDetector _buildOptionsButton(Color iconColor, double barHeight) {
@@ -372,45 +421,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     );
   }
 
-  GestureDetector _buildCloseButton(
-    VideoPlayerController controller,
-    Color backgroundColor,
-    Color iconColor,
-    double barHeight,
-    double buttonPadding,
-  ) {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
-    return GestureDetector(
-      onTap: widget.onClose,
-      child: AnimatedOpacity(
-        opacity:
-            isFinished
-                ? 1.0
-                : notifier.hideStuff
-                ? 0.0
-                : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: Container(
-              color: backgroundColor,
-              child: Container(
-                height: barHeight,
-                padding: EdgeInsets.only(
-                  left: buttonPadding,
-                  right: buttonPadding,
-                ),
-                child: Icon(Icons.close, color: iconColor, size: 16),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   GestureDetector _buildMuteButton(
     VideoPlayerController controller,
     Color backgroundColor,
@@ -615,14 +625,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
       ),
       child: Row(
         children: <Widget>[
-          if (widget.onClose != null && !chewieController.isFirstPlay)
-            _buildCloseButton(
-              controller,
-              backgroundColor,
-              iconColor,
-              barHeight,
-              buttonPadding,
-            ),
+          const Spacer(), // Push everything to the right
           if (chewieController.allowFullScreen)
             _buildExpandButton(
               backgroundColor,
@@ -630,7 +633,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
               barHeight,
               buttonPadding,
             ),
-          const Spacer(),
+          const SizedBox(width: 10),
           if (chewieController.allowMuting)
             _buildMuteButton(
               controller,
@@ -679,7 +682,14 @@ class _CupertinoControlsState extends State<CupertinoControls>
     setState(() {
       notifier.hideStuff = true;
 
-      chewieController.toggleFullScreen();
+      // Call the toggle fullscreen callback if provided
+      if (widget.onToggleFullscreen != null) {
+        widget.onToggleFullscreen!(!chewieController.isFullScreen);
+      } else {
+        // Fallback to default behavior
+        chewieController.toggleFullScreen();
+      }
+      
       _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
         setState(() {
           _cancelAndRestartTimer();
