@@ -718,22 +718,22 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   void _onExpandCollapse() {
+    final currentFullscreenState = chewieController.isFullScreen;
+
     setState(() {
       notifier.hideStuff = true;
+    });
 
-      // Call the toggle fullscreen callback if provided
-      if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!chewieController.isFullScreen);
-      } else {
-        // Fallback to default behavior
-        chewieController.toggleFullScreen();
+    if (widget.onToggleFullscreen != null) {
+      widget.onToggleFullscreen!(!currentFullscreenState);
+    } else {
+      chewieController.toggleFullScreen();
+    }
+
+    Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {});
       }
-
-      _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
-        setState(() {
-          _cancelAndRestartTimer();
-        });
-      });
     });
   }
 

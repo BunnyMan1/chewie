@@ -572,25 +572,34 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _onExpandCollapse() {
+    final currentFullscreenState = chewieController.isFullScreen;
+
     setState(() {
       notifier.hideStuff = true;
+    });
 
-      // Call the toggle fullscreen callback if provided
-      if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!chewieController.isFullScreen);
-      } else {
-        // Fallback to default behavior
-        chewieController.toggleFullScreen();
-      }
+    // Call the toggle fullscreen callback if provided
+    if (widget.onToggleFullscreen != null) {
+      widget.onToggleFullscreen!(!currentFullscreenState);
+    } else {
+      chewieController.toggleFullScreen();
+    }
 
-      _showAfterExpandCollapseTimer = Timer(
-        const Duration(milliseconds: 300),
-        () {
+    _showAfterExpandCollapseTimer = Timer(
+      const Duration(milliseconds: 300),
+      () {
+        if (mounted) {
           setState(() {
             _cancelAndRestartTimer();
           });
-        },
-      );
+        }
+      },
+    );
+
+    Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
