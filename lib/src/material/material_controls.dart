@@ -13,9 +13,9 @@ import 'package:video_player/video_player.dart';
 class MaterialControls extends StatefulWidget {
   const MaterialControls({
     this.showPlayButton = true,
-    this.onClose, 
+    this.onClose,
     this.onToggleFullscreen,
-    super.key
+    super.key,
   });
 
   final bool showPlayButton;
@@ -38,7 +38,7 @@ class _MaterialControlsState extends State<MaterialControls>
   late var _subtitlesPosition = Duration.zero;
   bool _subtitleOn = false;
   Timer? _showAfterExpandCollapseTimer;
-  bool _dragging = false;
+  bool dragging = false;
   bool _displayTapped = false;
   Timer? _bufferingDisplayTimer;
   bool _displayBufferingIndicator = false;
@@ -90,13 +90,13 @@ class _MaterialControlsState extends State<MaterialControls>
                     )
               else
                 _buildHitArea(),
-              
+
               // Top Right Close Button
               _buildTopRightCloseButton(),
-              
+
               // Top Left Action Bar
               _buildTopLeftActionBar(),
-              
+
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
@@ -156,9 +156,18 @@ class _MaterialControlsState extends State<MaterialControls>
     }
   }
 
+  @override
+  void didUpdateWidget(covariant MaterialControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Force rebuild when fullscreen state changes
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   Widget _buildTopRightCloseButton() {
     if (widget.onClose == null) return const SizedBox.shrink();
-    
+
     return Positioned(
       top: 0,
       right: 0,
@@ -404,7 +413,7 @@ class _MaterialControlsState extends State<MaterialControls>
         (_latestValue.position >= _latestValue.duration) &&
         _latestValue.duration.inSeconds > 0;
     final bool showPlayButton =
-        widget.showPlayButton && !_dragging && !notifier.hideStuff;
+        widget.showPlayButton && !dragging && !notifier.hideStuff;
 
     return GestureDetector(
       onTap: () {
@@ -556,17 +565,15 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _onExpandCollapse() {
-    setState(() {
-      notifier.hideStuff = true;
+    if (widget.onToggleFullscreen != null) {
+      widget.onToggleFullscreen!(!chewieController.isFullScreen);
+    } else {
+      setState(() {
+        notifier.hideStuff = true;
+      });
 
-      // Call the toggle fullscreen callback if provided
-      if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!chewieController.isFullScreen);
-      } else {
-        // Fallback to default behavior
-        chewieController.toggleFullScreen();
-      }
-      
+      chewieController.toggleFullScreen();
+
       _showAfterExpandCollapseTimer = Timer(
         const Duration(milliseconds: 300),
         () {
@@ -575,7 +582,7 @@ class _MaterialControlsState extends State<MaterialControls>
           });
         },
       );
-    });
+    }
   }
 
   void _playPause() {

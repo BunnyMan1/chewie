@@ -45,7 +45,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
   final marginSize = 5.0;
   Timer? _expandCollapseTimer;
   Timer? _initTimer;
-  bool _dragging = false;
+  bool dragging = false;
   Duration? _subtitlesPosition;
   bool _subtitleOn = false;
   Timer? _bufferingDisplayTimer;
@@ -106,10 +106,15 @@ class _CupertinoControlsState extends State<CupertinoControls>
                     )
               else
                 _buildHitArea(),
-              
+
               // Top Right Close Button (moved from top-left)
-              _buildTopRightCloseButton(backgroundColor, iconColor, barHeight, buttonPadding),
-              
+              _buildTopRightCloseButton(
+                backgroundColor,
+                iconColor,
+                barHeight,
+                buttonPadding,
+              ),
+
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -173,6 +178,15 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
   }
 
+  @override
+  void didUpdateWidget(covariant CupertinoControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Force rebuild when fullscreen state changes
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   Widget _buildTopRightCloseButton(
     Color backgroundColor,
     Color iconColor,
@@ -180,7 +194,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     if (widget.onClose == null) return const SizedBox.shrink();
-    
+
     return Positioned(
       top: 0,
       right: 0,
@@ -404,7 +418,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
         (_latestValue.position >= _latestValue.duration) &&
         _latestValue.duration.inSeconds > 0;
     final bool showPlayButton =
-        widget.showPlayButton && !_latestValue.isPlaying && !_dragging;
+        widget.showPlayButton && !_latestValue.isPlaying && !dragging;
 
     return GestureDetector(
       onTap:
@@ -699,23 +713,23 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   void _onExpandCollapse() {
-    setState(() {
-      notifier.hideStuff = true;
+    // Call the toggle fullscreen callback if provided
+    if (widget.onToggleFullscreen != null) {
+      widget.onToggleFullscreen!(!chewieController.isFullScreen);
+    } else {
+      // Fallback to default behavior
+      setState(() {
+        notifier.hideStuff = true;
+      });
 
-      // Call the toggle fullscreen callback if provided
-      if (widget.onToggleFullscreen != null) {
-        widget.onToggleFullscreen!(!chewieController.isFullScreen);
-      } else {
-        // Fallback to default behavior
-        chewieController.toggleFullScreen();
-      }
-      
+      chewieController.toggleFullScreen();
+
       _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
         setState(() {
           _cancelAndRestartTimer();
         });
       });
-    });
+    }
   }
 
   Widget _buildProgressBar() {

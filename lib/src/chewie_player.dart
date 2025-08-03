@@ -69,12 +69,21 @@ class ChewieState extends State<Chewie> {
   Future<void> listener() async {
     if (isControllerFullScreen && !_isFullScreen) {
       _isFullScreen = isControllerFullScreen;
-      await _pushFullScreenWidget(context);
-    } else if (_isFullScreen) {
-      Navigator.of(
-        context,
-        rootNavigator: widget.controller.useRootNavigator,
-      ).pop();
+      if (mounted && context.mounted) {
+        try {
+          await _pushFullScreenWidget(context);
+        } catch (e) {
+          _isFullScreen = false;
+          widget.controller._isFullScreen = false;
+        }
+      }
+    } else if (_isFullScreen && !isControllerFullScreen) {
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(
+          context,
+          rootNavigator: widget.controller.useRootNavigator,
+        ).pop();
+      }
       _isFullScreen = false;
     }
   }
@@ -364,7 +373,8 @@ class ChewieController extends ChangeNotifier {
           videoPlayerController ?? this.videoPlayerController,
       optionsTranslation: optionsTranslation ?? this.optionsTranslation,
       onCloseCallback: onCloseCallback ?? this.onCloseCallback,
-      onInitialPlayCompletedCallBack: onInitialPlayCompletedCallBack ?? this.onInitialPlayCompletedCallBack,
+      onInitialPlayCompletedCallBack:
+          onInitialPlayCompletedCallBack ?? this.onInitialPlayCompletedCallBack,
       isFirstPlay: isFirstPlay ?? this.isFirstPlay,
       aspectRatio: aspectRatio ?? this.aspectRatio,
       autoInitialize: autoInitialize ?? this.autoInitialize,
