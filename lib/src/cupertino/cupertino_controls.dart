@@ -174,17 +174,22 @@ class _CupertinoControlsState extends State<CupertinoControls>
   void _onControllerChange() {
     // This will trigger a rebuild when fullscreen state changes
     if (mounted) {
-      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
 
   @override
   void didUpdateWidget(covariant CupertinoControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Force rebuild when fullscreen state changes
-    if (mounted) {
-      setState(() {});
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Widget _buildTopRightCloseButton(
@@ -713,23 +718,23 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   void _onExpandCollapse() {
-    // Call the toggle fullscreen callback if provided
-    if (widget.onToggleFullscreen != null) {
-      widget.onToggleFullscreen!(!chewieController.isFullScreen);
-    } else {
-      // Fallback to default behavior
-      setState(() {
-        notifier.hideStuff = true;
-      });
+    setState(() {
+      notifier.hideStuff = true;
 
-      chewieController.toggleFullScreen();
+      // Call the toggle fullscreen callback if provided
+      if (widget.onToggleFullscreen != null) {
+        widget.onToggleFullscreen!(!chewieController.isFullScreen);
+      } else {
+        // Fallback to default behavior
+        chewieController.toggleFullScreen();
+      }
 
       _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
         setState(() {
           _cancelAndRestartTimer();
         });
       });
-    }
+    });
   }
 
   Widget _buildProgressBar() {

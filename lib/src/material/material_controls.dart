@@ -152,17 +152,24 @@ class _MaterialControlsState extends State<MaterialControls>
   void _onControllerChange() {
     // This will trigger a rebuild when fullscreen state changes
     if (mounted) {
-      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
 
+  // Ensure UI updates when fullscreen state changes
   @override
   void didUpdateWidget(covariant MaterialControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Force rebuild when fullscreen state changes
-    if (mounted) {
-      setState(() {});
-    }
+    // Ensure UI updates when fullscreen state changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Widget _buildTopRightCloseButton() {
@@ -565,14 +572,16 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _onExpandCollapse() {
-    if (widget.onToggleFullscreen != null) {
-      widget.onToggleFullscreen!(!chewieController.isFullScreen);
-    } else {
-      setState(() {
-        notifier.hideStuff = true;
-      });
+    setState(() {
+      notifier.hideStuff = true;
 
-      chewieController.toggleFullScreen();
+      // Call the toggle fullscreen callback if provided
+      if (widget.onToggleFullscreen != null) {
+        widget.onToggleFullscreen!(!chewieController.isFullScreen);
+      } else {
+        // Fallback to default behavior
+        chewieController.toggleFullScreen();
+      }
 
       _showAfterExpandCollapseTimer = Timer(
         const Duration(milliseconds: 300),
@@ -582,7 +591,7 @@ class _MaterialControlsState extends State<MaterialControls>
           });
         },
       );
-    }
+    });
   }
 
   void _playPause() {
