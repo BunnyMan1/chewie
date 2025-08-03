@@ -53,6 +53,9 @@ class _CupertinoControlsState extends State<CupertinoControls>
   double selectedSpeed = 1.0;
   late VideoPlayerController controller;
 
+  // Custom blue color
+  static const Color customBlue = Color(0xFF0B6FE4);
+
   // We know that _chewieController is set in didChangeDependencies
   ChewieController get chewieController => _chewieController!;
   ChewieController? _chewieController;
@@ -96,12 +99,16 @@ class _CupertinoControlsState extends State<CupertinoControls>
             children: [
               if (_displayBufferingIndicator)
                 _chewieController?.bufferingBuilder?.call(context) ??
-                    const Center(child: CircularProgressIndicator())
+                    const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(customBlue),
+                      ),
+                    )
               else
                 _buildHitArea(),
               
-              // Top Left Close Button
-              _buildTopLeftCloseButton(backgroundColor, iconColor, barHeight, buttonPadding),
+              // Top Right Close Button (moved from top-left)
+              _buildTopRightCloseButton(backgroundColor, iconColor, barHeight, buttonPadding),
               
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -166,7 +173,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
   }
 
-  Widget _buildTopLeftCloseButton(
+  Widget _buildTopRightCloseButton(
     Color backgroundColor,
     Color iconColor,
     double barHeight,
@@ -176,7 +183,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     
     return Positioned(
       top: 0,
-      left: 0,
+      right: 0,
       child: SafeArea(
         child: AnimatedOpacity(
           opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -418,13 +425,17 @@ class _CupertinoControlsState extends State<CupertinoControls>
                   notifier.hideStuff = false;
                 });
               },
-      child: CenterPlayButton(
-        backgroundColor: widget.backgroundColor,
-        iconColor: widget.iconColor,
-        isFinished: isFinished,
-        isPlaying: controller.value.isPlaying,
-        show: showPlayButton,
-        onPressed: _playPause,
+      child: Container(
+        alignment: Alignment.center,
+        color: Colors.transparent,
+        child: CenterPlayButton(
+          backgroundColor: widget.backgroundColor,
+          iconColor: widget.iconColor,
+          isFinished: isFinished,
+          isPlaying: controller.value.isPlaying,
+          show: showPlayButton,
+          onPressed: _playPause,
+        ),
       ),
     );
   }
@@ -713,32 +724,29 @@ class _CupertinoControlsState extends State<CupertinoControls>
         padding: const EdgeInsets.only(right: 12.0),
         child: CupertinoVideoProgressBar(
           controller,
-          onDragStart: () {
-            setState(() {
-              _dragging = true;
-            });
-
-            _hideTimer?.cancel();
-          },
-          onDragUpdate: () {
-            _hideTimer?.cancel();
-          },
-          onDragEnd: () {
-            setState(() {
-              _dragging = false;
-            });
-
-            _startHideTimer();
-          },
-          colors:
-              chewieController.cupertinoProgressColors ??
-              ChewieProgressColors(
-                playedColor: const Color.fromARGB(120, 255, 255, 255),
-                handleColor: const Color.fromARGB(255, 255, 255, 255),
-                bufferedColor: const Color.fromARGB(60, 255, 255, 255),
-                backgroundColor: const Color.fromARGB(20, 255, 255, 255),
-              ),
-          draggableProgressBar: chewieController.draggableProgressBar,
+          // Disable seeking by commenting out drag callbacks
+          // onDragStart: () {
+          //   setState(() {
+          //     _dragging = true;
+          //   });
+          //   _hideTimer?.cancel();
+          // },
+          // onDragUpdate: () {
+          //   _hideTimer?.cancel();
+          // },
+          // onDragEnd: () {
+          //   setState(() {
+          //     _dragging = false;
+          //   });
+          //   _startHideTimer();
+          // },
+          colors: ChewieProgressColors(
+            playedColor: customBlue,
+            handleColor: customBlue,
+            bufferedColor: customBlue.withValues(alpha: 0.3),
+            backgroundColor: Colors.white.withValues(alpha: 0.3),
+          ),
+          draggableProgressBar: false, // Disable dragging
         ),
       ),
     );

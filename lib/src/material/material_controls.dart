@@ -12,7 +12,7 @@ import 'package:video_player/video_player.dart';
 
 class MaterialControls extends StatefulWidget {
   const MaterialControls({
-    this.showPlayButton = true, 
+    this.showPlayButton = true,
     this.onClose, 
     this.onToggleFullscreen,
     super.key
@@ -45,6 +45,9 @@ class _MaterialControlsState extends State<MaterialControls>
 
   final barHeight = 48.0 * 1.5;
   final marginSize = 5.0;
+
+  // Custom blue color
+  static const Color customBlue = Color(0xFF0B6FE4);
 
   late VideoPlayerController controller;
   ChewieController? _chewieController;
@@ -80,15 +83,19 @@ class _MaterialControlsState extends State<MaterialControls>
             children: [
               if (_displayBufferingIndicator)
                 _chewieController?.bufferingBuilder?.call(context) ??
-                    const Center(child: CircularProgressIndicator())
+                    const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(customBlue),
+                      ),
+                    )
               else
                 _buildHitArea(),
               
-              // Top Left Close Button
-              _buildTopLeftCloseButton(),
+              // Top Right Close Button
+              _buildTopRightCloseButton(),
               
-              // Top Right Action Bar (Options, Subtitles)
-              _buildActionBar(),
+              // Top Left Action Bar
+              _buildTopLeftActionBar(),
               
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -149,12 +156,12 @@ class _MaterialControlsState extends State<MaterialControls>
     }
   }
 
-  Widget _buildTopLeftCloseButton() {
+  Widget _buildTopRightCloseButton() {
     if (widget.onClose == null) return const SizedBox.shrink();
     
     return Positioned(
       top: 0,
-      left: 0,
+      right: 0,
       child: SafeArea(
         child: AnimatedOpacity(
           opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -177,10 +184,10 @@ class _MaterialControlsState extends State<MaterialControls>
     );
   }
 
-  Widget _buildActionBar() {
+  Widget _buildTopLeftActionBar() {
     return Positioned(
       top: 0,
-      right: 0,
+      left: 0,
       child: SafeArea(
         child: AnimatedOpacity(
           opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -221,34 +228,37 @@ class _MaterialControlsState extends State<MaterialControls>
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
       duration: const Duration(milliseconds: 250),
-      child: IconButton(
-        onPressed: () async {
-          _hideTimer?.cancel();
+      child: Container(
+        margin: const EdgeInsets.all(12.0),
+        child: IconButton(
+          onPressed: () async {
+            _hideTimer?.cancel();
 
-          if (chewieController.optionsBuilder != null) {
-            await chewieController.optionsBuilder!(
-              context,
-              _buildOptions(context),
-            );
-          } else {
-            await showModalBottomSheet<OptionItem>(
-              context: context,
-              isScrollControlled: true,
-              useRootNavigator: chewieController.useRootNavigator,
-              builder:
-                  (context) => OptionsDialog(
-                    options: _buildOptions(context),
-                    cancelButtonText:
-                        chewieController.optionsTranslation?.cancelButtonText,
-                  ),
-            );
-          }
+            if (chewieController.optionsBuilder != null) {
+              await chewieController.optionsBuilder!(
+                context,
+                _buildOptions(context),
+              );
+            } else {
+              await showModalBottomSheet<OptionItem>(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: chewieController.useRootNavigator,
+                builder:
+                    (context) => OptionsDialog(
+                      options: _buildOptions(context),
+                      cancelButtonText:
+                          chewieController.optionsTranslation?.cancelButtonText,
+                    ),
+              );
+            }
 
-          if (_latestValue.isPlaying) {
-            _startHideTimer();
-          }
-        },
-        icon: const Icon(Icons.more_vert, color: Colors.white),
+            if (_latestValue.isPlaying) {
+              _startHideTimer();
+            }
+          },
+          icon: const Icon(Icons.more_vert, color: Colors.white),
+        ),
       ),
     );
   }
@@ -421,26 +431,16 @@ class _MaterialControlsState extends State<MaterialControls>
       },
       child: Container(
         alignment: Alignment.center,
-        color:
-            Colors
-                .transparent, // The Gesture Detector doesn't expand to the full size of the container without this; Not sure why!
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-           
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: marginSize),
-              child: CenterPlayButton(
-                backgroundColor: Colors.black54,
-                iconColor: Colors.white,
-                isFinished: isFinished,
-                isPlaying: controller.value.isPlaying,
-                show: showPlayButton,
-                onPressed: _playPause,
-              ),
-            ),
-           
-          ],
+        color: Colors.transparent,
+        child: Center(
+          child: CenterPlayButton(
+            backgroundColor: Colors.black54,
+            iconColor: Colors.white,
+            isFinished: isFinished,
+            isPlaying: controller.value.isPlaying,
+            show: showPlayButton,
+            onPressed: _playPause,
+          ),
         ),
       ),
     );
@@ -505,6 +505,7 @@ class _MaterialControlsState extends State<MaterialControls>
       child: Container(
         height: barHeight,
         color: Colors.transparent,
+        margin: const EdgeInsets.all(12.0),
         padding: const EdgeInsets.only(left: 12.0, right: 12.0),
         child: Icon(
           _subtitleOn
@@ -654,36 +655,29 @@ class _MaterialControlsState extends State<MaterialControls>
     return Expanded(
       child: MaterialVideoProgressBar(
         controller,
-        onDragStart: () {
-          setState(() {
-            _dragging = true;
-          });
-
-          _hideTimer?.cancel();
-        },
-        onDragUpdate: () {
-          _hideTimer?.cancel();
-        },
-        onDragEnd: () {
-          setState(() {
-            _dragging = false;
-          });
-
-          _startHideTimer();
-        },
-        colors:
-            chewieController.materialProgressColors ??
-            ChewieProgressColors(
-              playedColor: Theme.of(context).colorScheme.secondary,
-              handleColor: Theme.of(context).colorScheme.secondary,
-              bufferedColor: Theme.of(
-                context,
-              ).colorScheme.surface.withValues(alpha: 0.5),
-              backgroundColor: Theme.of(
-                context,
-              ).disabledColor.withValues(alpha: .5),
-            ),
-        draggableProgressBar: chewieController.draggableProgressBar,
+        // Disable seeking by commenting out drag callbacks
+        // onDragStart: () {
+        //   setState(() {
+        //     _dragging = true;
+        //   });
+        //   _hideTimer?.cancel();
+        // },
+        // onDragUpdate: () {
+        //   _hideTimer?.cancel();
+        // },
+        // onDragEnd: () {
+        //   setState(() {
+        //     _dragging = false;
+        //   });
+        //   _startHideTimer();
+        // },
+        colors: ChewieProgressColors(
+          playedColor: customBlue,
+          handleColor: customBlue,
+          bufferedColor: customBlue.withValues(alpha: 0.3),
+          backgroundColor: Colors.white.withValues(alpha: 0.3),
+        ),
+        draggableProgressBar: false, // Disable dragging
       ),
     );
   }
