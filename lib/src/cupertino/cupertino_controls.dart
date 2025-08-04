@@ -21,6 +21,8 @@ class CupertinoControls extends StatefulWidget {
     this.showPlayButton = true,
     this.onClose,
     this.onToggleFullscreen,
+    this.isVideoSkippable = true,
+    this.isForceFullscreen = false,
     super.key,
   });
 
@@ -29,6 +31,8 @@ class CupertinoControls extends StatefulWidget {
   final bool showPlayButton;
   final VoidCallback? onClose;
   final void Function(bool isFullscreen)? onToggleFullscreen;
+  final bool isVideoSkippable;
+  final bool isForceFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -65,6 +69,19 @@ class _CupertinoControlsState extends State<CupertinoControls>
   void initState() {
     super.initState();
     notifier = Provider.of<PlayerNotifier>(context, listen: false);
+  }
+
+  bool _shouldShowCloseButton() {
+    if (widget.onClose == null) return false;
+
+    return widget.isVideoSkippable || !chewieController.isFirstPlay;
+  }
+
+  bool _shouldShowFullscreenButton() {
+    if (!chewieController.allowFullScreen) return false;
+
+    return (!widget.isForceFullscreen || !chewieController.isFirstPlay) &&
+        (widget.isVideoSkippable || !chewieController.isFirstPlay);
   }
 
   @override
@@ -108,7 +125,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
               else
                 _buildHitArea(),
 
-              if (widget.onClose != null && !chewieController.isFirstPlay)
+              if (_shouldShowCloseButton())
                 _buildTopRightCloseButton(
                   backgroundColor,
                   iconColor,
@@ -665,12 +682,13 @@ class _CupertinoControlsState extends State<CupertinoControls>
         children: <Widget>[
           const Spacer(),
           if (chewieController.allowFullScreen && showFullscreen)
-            _buildExpandButton(
-              backgroundColor,
-              iconColor,
-              barHeight,
-              buttonPadding,
-            ),
+            if (_shouldShowFullscreenButton())
+              _buildExpandButton(
+                backgroundColor,
+                iconColor,
+                barHeight,
+                buttonPadding,
+              ),
           const SizedBox(width: 10),
           if (chewieController.allowMuting)
             _buildMuteButton(
@@ -858,7 +876,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     if (!mounted) return;
 
     final bool buffering = getIsBuffering(controller);
-    final isFinished = _latestValue.position >= _latestValue.duration;
 
     // display the progress bar indicator only after the buffering delay if it has been set
     if (chewieController.progressIndicatorDelay != null) {
@@ -879,17 +896,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     setState(() {
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
-
-      if (isFinished) {
-        if (chewieController.isFirstPlay) {
-          chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault &&
-              chewieController.isFullScreen) {
-            chewieController.exitFullScreen();
-          }
-        }
-        notifier.hideStuffNoState(false);
-      }
     });
   }
 }

@@ -15,12 +15,16 @@ class MaterialControls extends StatefulWidget {
     this.showPlayButton = true,
     this.onClose,
     this.onToggleFullscreen,
+    this.isVideoSkippable = true,
+    this.isForceFullscreen = false,
     super.key,
   });
 
   final bool showPlayButton;
   final VoidCallback? onClose;
   final void Function(bool isFullscreen)? onToggleFullscreen;
+  final bool isVideoSkippable;
+  final bool isForceFullscreen;
 
   @override
   State<StatefulWidget> createState() {
@@ -62,6 +66,17 @@ class _MaterialControlsState extends State<MaterialControls>
     notifier = Provider.of<PlayerNotifier>(context, listen: false);
   }
 
+  bool _shouldShowCloseButton() {
+    if (widget.onClose == null) return false;
+    return widget.isVideoSkippable || !chewieController.isFirstPlay;
+  }
+
+  bool _shouldShowFullscreenButton() {
+    if (!chewieController.allowFullScreen) return false;
+    return (!widget.isForceFullscreen || !chewieController.isFirstPlay) &&
+        (widget.isVideoSkippable || !chewieController.isFirstPlay);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_latestValue.hasError) {
@@ -92,10 +107,7 @@ class _MaterialControlsState extends State<MaterialControls>
               else
                 _buildHitArea(),
 
-              if (widget.onClose != null && !chewieController.isFirstPlay)
-                _buildTopRightCloseButton(),
-
-              // Top Left Action Bar
+              if (_shouldShowCloseButton()) _buildTopRightCloseButton(),
               _buildTopLeftActionBar(),
 
               Column(
@@ -317,13 +329,6 @@ class _MaterialControlsState extends State<MaterialControls>
 
   AnimatedOpacity _buildBottomBar(BuildContext context) {
     final iconColor = Theme.of(context).textTheme.labelLarge!.color;
-    final isFinished = _latestValue.position >= _latestValue.duration;
-    final showFullscreen =
-        chewieController.allowFullScreen &&
-        (!chewieController.fullScreenByDefault ||
-            (chewieController.fullScreenByDefault &&
-                !chewieController.isFirstPlay)) &&
-        !isFinished;
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -354,8 +359,7 @@ class _MaterialControlsState extends State<MaterialControls>
                     if (chewieController.allowMuting)
                       _buildMuteButton(controller),
                     const Spacer(),
-                    if (chewieController.allowFullScreen && showFullscreen)
-                      _buildExpandButton(),
+                    if (_shouldShowFullscreenButton()) _buildExpandButton(),
                   ],
                 ),
               ),
@@ -665,7 +669,6 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _updateState() {
     if (!mounted) return;
-    final isFinished = _latestValue.position >= _latestValue.duration;
 
     final bool buffering = getIsBuffering(controller);
 
@@ -688,17 +691,6 @@ class _MaterialControlsState extends State<MaterialControls>
     setState(() {
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
-
-      if (isFinished) {
-        if (chewieController.isFirstPlay) {
-          chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault &&
-              chewieController.isFullScreen) {
-            chewieController.exitFullScreen();
-          }
-        }
-        notifier.hideStuffNoState(false);
-      }
     });
   }
 
