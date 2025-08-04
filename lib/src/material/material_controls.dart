@@ -30,6 +30,7 @@ class MaterialControls extends StatefulWidget {
 
 class _MaterialControlsState extends State<MaterialControls>
     with SingleTickerProviderStateMixin {
+  bool _isCustomFullScreen = false;
   late PlayerNotifier notifier;
   late VideoPlayerValue _latestValue;
   double? _latestVolume;
@@ -394,21 +395,21 @@ class _MaterialControlsState extends State<MaterialControls>
     );
   }
 
-  GestureDetector _buildExpandButton() {
+  Widget _buildExpandButton() {
     return GestureDetector(
-      onTap: _onExpandCollapse,
+      onTap: () {
+        _onExpandCollapse();
+      },
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
         child: Container(
-          height: barHeight + (chewieController.isFullScreen ? 15.0 : 0),
+          height: barHeight + (_isCustomFullScreen ? 15.0 : 0),
           margin: const EdgeInsets.only(right: 12.0),
           padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: Center(
             child: Icon(
-              chewieController.isFullScreen
-                  ? Icons.fullscreen_exit
-                  : Icons.fullscreen,
+              _isCustomFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
               color: Colors.white,
             ),
           ),
@@ -583,26 +584,23 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _onExpandCollapse() {
-    // Get current state and log it
-    final currentFullscreenState = chewieController.isFullScreen;
-    final newState = !currentFullscreenState;
+    final newState = !_isCustomFullScreen;
 
     print(
-      "_onExpandCollapse: current=$currentFullscreenState, will toggle to=$newState",
+      "_onExpandCollapse: current=$_isCustomFullScreen, will toggle to=$newState",
     );
 
     setState(() {
       notifier.hideStuff = true;
+      _isCustomFullScreen = newState; // Update our custom state immediately
     });
 
+    // Always call the callback if available
     if (widget.onToggleFullscreen != null) {
       widget.onToggleFullscreen!(newState);
     } else {
-      if (currentFullscreenState) {
-        chewieController.exitFullScreen();
-      } else {
-        chewieController.enterFullScreen();
-      }
+      // Fallback
+      chewieController.toggleFullScreen();
     }
 
     _showAfterExpandCollapseTimer = Timer(
@@ -615,12 +613,6 @@ class _MaterialControlsState extends State<MaterialControls>
         }
       },
     );
-
-    Timer(const Duration(milliseconds: 50), () {
-      if (mounted) {
-        setState(() {});
-      }
-    });
   }
 
   void _playPause() {

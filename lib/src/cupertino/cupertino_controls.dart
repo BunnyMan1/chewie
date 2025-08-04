@@ -38,6 +38,7 @@ class CupertinoControls extends StatefulWidget {
 
 class _CupertinoControlsState extends State<CupertinoControls>
     with SingleTickerProviderStateMixin {
+  bool _isCustomFullScreen = false;
   late PlayerNotifier notifier;
   late VideoPlayerValue _latestValue;
   double? _latestVolume;
@@ -382,37 +383,27 @@ class _CupertinoControlsState extends State<CupertinoControls>
     );
   }
 
-  GestureDetector _buildExpandButton(
+  Widget _buildExpandButton(
     Color backgroundColor,
     Color iconColor,
     double barHeight,
     double buttonPadding,
   ) {
     return GestureDetector(
-      onTap: _onExpandCollapse,
+      onTap: () {
+        _onExpandCollapse();
+      },
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: Container(
-              height: barHeight,
-              padding: EdgeInsets.only(
-                left: buttonPadding,
-                right: buttonPadding,
-              ),
-              color: backgroundColor,
-              child: Center(
-                child: Icon(
-                  chewieController.isFullScreen
-                      ? CupertinoIcons.arrow_down_right_arrow_up_left
-                      : CupertinoIcons.arrow_up_left_arrow_down_right,
-                  color: iconColor,
-                  size: 16,
-                ),
-              ),
+        child: Container(
+          height: barHeight + (_isCustomFullScreen ? 15.0 : 0),
+          margin: const EdgeInsets.only(right: 12.0),
+          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+          child: Center(
+            child: Icon(
+              _isCustomFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+              color: Colors.white,
             ),
           ),
         ),
@@ -729,25 +720,23 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   void _onExpandCollapse() {
-    final currentFullscreenState = chewieController.isFullScreen;
-    final newState = !currentFullscreenState;
+    final newState = !_isCustomFullScreen;
 
     print(
-      "_onExpandCollapse: current=$currentFullscreenState, will toggle to=$newState",
+      "_onExpandCollapse: current=$_isCustomFullScreen, will toggle to=$newState",
     );
 
     setState(() {
       notifier.hideStuff = true;
+      _isCustomFullScreen = newState;
     });
 
+    // Always call the callback if available
     if (widget.onToggleFullscreen != null) {
       widget.onToggleFullscreen!(newState);
     } else {
-      if (currentFullscreenState) {
-        chewieController.exitFullScreen();
-      } else {
-        chewieController.enterFullScreen();
-      }
+      // Fallback
+      chewieController.toggleFullScreen();
     }
 
     _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
@@ -755,12 +744,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
         setState(() {
           _cancelAndRestartTimer();
         });
-      }
-    });
-
-    Timer(const Duration(milliseconds: 50), () {
-      if (mounted) {
-        setState(() {});
       }
     });
   }

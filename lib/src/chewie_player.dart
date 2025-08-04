@@ -412,7 +412,7 @@ class ChewieController extends ChangeNotifier {
       bufferingBuilder: bufferingBuilder ?? this.bufferingBuilder,
       allowedScreenSleep: allowedScreenSleep ?? this.allowedScreenSleep,
       isLive: isLive ?? this.isLive,
-      allowFullScreen: allowFullScreen ?? this.allowFullScreen,
+      allowFullScreen: false,
       allowMuting: allowMuting ?? this.allowMuting,
       allowPlaybackSpeedChanging:
           allowPlaybackSpeedChanging ?? this.allowPlaybackSpeedChanging,
