@@ -74,28 +74,19 @@ class _CupertinoControlsState extends State<CupertinoControls>
   bool _shouldShowCloseButton() {
     if (widget.onClose == null) return false;
 
-    // Logic:
-    // 1. If video is skippable -> always show close button
-    // 2. If video is not skippable -> show close button only after first play
+    // Show close button if:
+    // 1. Video is skippable, OR
+    // 2. After first play (regardless of skippable status)
     return widget.isVideoSkippable || !chewieController.isFirstPlay;
   }
 
   bool _shouldShowFullscreenButton() {
     if (!chewieController.allowFullScreen) return false;
 
-    // Logic:
-    // 1. If video is skippable -> always show fullscreen button
-    // 2. If video is force fullscreen -> don't show fullscreen button until first play
-    // 3. If video is not skippable -> show fullscreen button only after first play
-    if (widget.isVideoSkippable) {
-      return true;
-    }
-    
-    if (widget.isForceFullscreen) {
-      return !chewieController.isFirstPlay;
-    }
-    
-    return !chewieController.isFirstPlay;
+    // Show fullscreen button if:
+    // 1. Video is NOT force fullscreen, OR
+    // 2. After first play (regardless of force fullscreen status)
+    return !widget.isForceFullscreen || !chewieController.isFirstPlay;
   }
 
   @override
