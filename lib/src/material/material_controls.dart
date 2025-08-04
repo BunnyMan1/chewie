@@ -69,18 +69,18 @@ class _MaterialControlsState extends State<MaterialControls>
   bool _shouldShowCloseButton() {
     if (widget.onClose == null) return false;
 
-    // Show close button if:
-    // 1. Video is skippable, OR
-    // 2. After first play (regardless of skippable status)
+    // Show close button ONLY if:
+    // 1. Video is skippable (always), OR
+    // 2. First play is completed (not just started)
     return widget.isVideoSkippable || !chewieController.isFirstPlay;
   }
 
   bool _shouldShowFullscreenButton() {
     if (!chewieController.allowFullScreen) return false;
 
-    // Show fullscreen button if:
-    // 1. Video is NOT force fullscreen, OR
-    // 2. After first play (regardless of force fullscreen status)
+    // Show fullscreen button ONLY if:
+    // 1. Video is NOT force fullscreen (always), OR
+    // 2. First play is completed (not just started)
     return !widget.isForceFullscreen || !chewieController.isFirstPlay;
   }
 

@@ -665,9 +665,14 @@ class ChewieController extends ChangeNotifier {
   void _playListener() {
     if (videoPlayerController.value.isPlaying && !_hasPlayedOnce) {
       _hasPlayedOnce = true;
+    }
+  }
+
+  void completeFirstPlay() {
+    if (isFirstPlay) {
       isFirstPlay = false;
       notifyListeners();
-      
+
       if (onInitialPlayCompletedCallBack != null) {
         onInitialPlayCompletedCallBack!();
       }
