@@ -23,10 +23,17 @@ typedef ChewieRoutePageBuilder =
 /// `video_player` is pretty low level. Chewie wraps it in a friendly skin to
 /// make it easy to use!
 class Chewie extends StatefulWidget {
-  const Chewie({super.key, required this.controller});
+  const Chewie({
+    super.key,
+    required this.controller,
+    required this.onToggleFullscreen,
+  });
 
   /// The [ChewieController]
   final ChewieController controller;
+
+  /// Callback function that gets called when fullscreen state changes
+  final void Function(bool newState) onToggleFullscreen;
 
   @override
   ChewieState createState() {
@@ -86,6 +93,7 @@ class ChewieState extends State<Chewie> {
       }
       _isFullScreen = false;
     }
+    widget.onToggleFullscreen(_isFullScreen);
   }
 
   @override
@@ -412,7 +420,9 @@ class ChewieController extends ChangeNotifier {
       bufferingBuilder: bufferingBuilder ?? this.bufferingBuilder,
       allowedScreenSleep: allowedScreenSleep ?? this.allowedScreenSleep,
       isLive: isLive ?? this.isLive,
-      allowFullScreen: false,
+      allowFullScreen:
+          allowFullScreen ??
+          this.allowFullScreen,
       allowMuting: allowMuting ?? this.allowMuting,
       allowPlaybackSpeedChanging:
           allowPlaybackSpeedChanging ?? this.allowPlaybackSpeedChanging,
@@ -622,10 +632,15 @@ class ChewieController extends ChangeNotifier {
 
   bool _isFullScreen = false;
   bool _hasPlayedOnce = false;
+  int _noOfTimesPlayed = 0;
 
   bool get isFullScreen => _isFullScreen;
 
   bool get isPlaying => videoPlayerController.value.isPlaying;
+
+  bool get isFinished =>
+      videoPlayerController.value.position >=
+      videoPlayerController.value.duration;
 
   Future<dynamic> _initialize() async {
     await videoPlayerController.setLooping(looping);
@@ -651,8 +666,14 @@ class ChewieController extends ChangeNotifier {
       videoPlayerController.addListener(_fullScreenListener);
     }
 
-    // Add listener for initial play completion
     videoPlayerController.addListener(_playListener);
+
+    // Add playback increment listener from first file
+    videoPlayerController.addListener(_playBackIncrement);
+
+    if (onInitialPlayCompletedCallBack != null) {
+      videoPlayerController.addListener(_onInitialPlayCompleted);
+    }
   }
 
   Future<void> _fullScreenListener() async {
@@ -671,9 +692,24 @@ class ChewieController extends ChangeNotifier {
     }
   }
 
-  void enterFullScreen() {
+  void _playBackIncrement() {
+    if (isFinished) {
+      _noOfTimesPlayed++;
+    }
+  }
+
+  Future<void> _onInitialPlayCompleted() async {
+    if (onInitialPlayCompletedCallBack != null &&
+        _noOfTimesPlayed <= 1 &&
+        isFinished) {
+      onInitialPlayCompletedCallBack!();
+      videoPlayerController.removeListener(_onInitialPlayCompleted);
+    }
+  }
+
+  void enterFullScreen({bool notify = true}) {
     _isFullScreen = true;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   void exitFullScreen() {
@@ -718,6 +754,10 @@ class ChewieController extends ChangeNotifier {
   @override
   void dispose() {
     videoPlayerController.removeListener(_playListener);
+    videoPlayerController.removeListener(_playBackIncrement);
+    if (onInitialPlayCompletedCallBack != null) {
+      videoPlayerController.removeListener(_onInitialPlayCompleted);
+    }
     super.dispose();
   }
 }
