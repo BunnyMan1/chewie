@@ -317,7 +317,7 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
         duration: const Duration(milliseconds: 300),
         child: Container(
           height: barHeight + (chewieController.isFullScreen ? 15.0 : 0),
-          margin: const EdgeInsets.only(right: 12.0),
+          margin: const EdgeInsets.only(right: 8.0),
           padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: Center(
             child: Icon(
@@ -447,7 +447,7 @@ class _MaterialDesktopControlsState extends State<MaterialDesktopControls>
 
     return Text(
       '${formatDuration(position)} / ${formatDuration(duration)}',
-      style: const TextStyle(fontSize: 14.0, color: Colors.white),
+      style: const TextStyle(fontSize: 12.0, color: Colors.white),
     );
   }
 

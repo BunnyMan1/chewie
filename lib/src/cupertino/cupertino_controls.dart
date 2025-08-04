@@ -108,7 +108,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
               else
                 _buildHitArea(),
 
-              // Top Right Close Button (moved from top-left)
               _buildTopRightCloseButton(
                 backgroundColor,
                 iconColor,
@@ -173,7 +172,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   void _onControllerChange() {
-    // This will trigger a rebuild when fullscreen state changes
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -398,7 +396,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
         duration: const Duration(milliseconds: 300),
         child: Container(
           height: barHeight + (_isCustomFullScreen ? 15.0 : 0),
-          margin: const EdgeInsets.only(right: 12.0),
+          margin: const EdgeInsets.only(right: 8.0),
           padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: Center(
             child: Icon(
@@ -656,7 +654,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
       ),
       child: Row(
         children: <Widget>[
-          const Spacer(), // Push everything to the right
+          const Spacer(), 
           if (chewieController.allowFullScreen)
             _buildExpandButton(
               backgroundColor,
@@ -695,7 +693,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     controller.addListener(_updateState);
     chewieController.addListener(_onControllerChange);
 
-    // Add this line for better state synchronization
     chewieController.addListener(() {
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -722,20 +719,14 @@ class _CupertinoControlsState extends State<CupertinoControls>
   void _onExpandCollapse() {
     final newState = !_isCustomFullScreen;
 
-    print(
-      "_onExpandCollapse: current=$_isCustomFullScreen, will toggle to=$newState",
-    );
-
     setState(() {
       notifier.hideStuff = true;
       _isCustomFullScreen = newState;
     });
 
-    // Always call the callback if available
     if (widget.onToggleFullscreen != null) {
       widget.onToggleFullscreen!(newState);
     } else {
-      // Fallback
       chewieController.toggleFullScreen();
     }
 

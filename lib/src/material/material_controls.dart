@@ -355,7 +355,7 @@ class _MaterialControlsState extends State<MaterialControls>
               if (!chewieController.isLive)
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(children: [_buildProgressBar()]),
                   ),
                 ),
@@ -405,7 +405,7 @@ class _MaterialControlsState extends State<MaterialControls>
         duration: const Duration(milliseconds: 300),
         child: Container(
           height: barHeight + (_isCustomFullScreen ? 15.0 : 0),
-          margin: const EdgeInsets.only(right: 12.0),
+          margin: const EdgeInsets.only(right: 8.0),
           padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: Center(
             child: Icon(
@@ -499,7 +499,7 @@ class _MaterialControlsState extends State<MaterialControls>
           TextSpan(
             text: '/ ${formatDuration(duration)}',
             style: TextStyle(
-              fontSize: 14.0,
+              fontSize: 12.0,
               color: Colors.white.withValues(alpha: .75),
               fontWeight: FontWeight.normal,
             ),
@@ -586,20 +586,14 @@ class _MaterialControlsState extends State<MaterialControls>
   void _onExpandCollapse() {
     final newState = !_isCustomFullScreen;
 
-    print(
-      "_onExpandCollapse: current=$_isCustomFullScreen, will toggle to=$newState",
-    );
-
     setState(() {
       notifier.hideStuff = true;
-      _isCustomFullScreen = newState; // Update our custom state immediately
+      _isCustomFullScreen = newState;
     });
 
-    // Always call the callback if available
     if (widget.onToggleFullscreen != null) {
       widget.onToggleFullscreen!(newState);
     } else {
-      // Fallback
       chewieController.toggleFullScreen();
     }
 
