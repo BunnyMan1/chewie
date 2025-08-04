@@ -187,7 +187,9 @@ class _MaterialControlsState extends State<MaterialControls>
               color: Colors.black54,
               shape: BoxShape.circle,
             ),
-            margin: const EdgeInsets.all(12.0),
+            margin: EdgeInsets.all(
+              8.0 + MediaQuery.of(context).padding.top * 0.1,
+            ),
             child: IconButton(
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () {
@@ -578,7 +580,6 @@ class _MaterialControlsState extends State<MaterialControls>
       notifier.hideStuff = true;
     });
 
-    // Call the toggle fullscreen callback if provided
     if (widget.onToggleFullscreen != null) {
       widget.onToggleFullscreen!(!currentFullscreenState);
     } else {
@@ -596,7 +597,7 @@ class _MaterialControlsState extends State<MaterialControls>
       },
     );
 
-    Timer(const Duration(milliseconds: 300), () {
+    Timer(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {});
       }

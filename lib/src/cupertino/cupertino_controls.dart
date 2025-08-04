@@ -208,7 +208,9 @@ class _CupertinoControlsState extends State<CupertinoControls>
           opacity: notifier.hideStuff ? 0.0 : 1.0,
           duration: const Duration(milliseconds: 300),
           child: Container(
-            margin: EdgeInsets.all(marginSize),
+            margin: EdgeInsets.all(
+              8.0 + MediaQuery.of(context).padding.top * 0.1,
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: BackdropFilter(
@@ -730,7 +732,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
       chewieController.toggleFullScreen();
     }
 
-    Timer(const Duration(milliseconds: 300), () {
+    Timer(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {});
       }
