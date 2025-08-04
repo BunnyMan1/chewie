@@ -704,6 +704,15 @@ class _CupertinoControlsState extends State<CupertinoControls>
     controller.addListener(_updateState);
     chewieController.addListener(_onControllerChange);
 
+    // Add this line for better state synchronization
+    chewieController.addListener(() {
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() {});
+        });
+      }
+    });
+
     _updateState();
 
     if (controller.value.isPlaying || chewieController.autoPlay) {
@@ -721,18 +730,35 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
   void _onExpandCollapse() {
     final currentFullscreenState = chewieController.isFullScreen;
+    final newState = !currentFullscreenState;
+
+    print(
+      "_onExpandCollapse: current=$currentFullscreenState, will toggle to=$newState",
+    );
 
     setState(() {
       notifier.hideStuff = true;
     });
 
     if (widget.onToggleFullscreen != null) {
-      widget.onToggleFullscreen!(!currentFullscreenState);
+      widget.onToggleFullscreen!(newState);
     } else {
-      chewieController.toggleFullScreen();
+      if (currentFullscreenState) {
+        chewieController.exitFullScreen();
+      } else {
+        chewieController.enterFullScreen();
+      }
     }
 
-    Timer(const Duration(milliseconds: 100), () {
+    _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _cancelAndRestartTimer();
+        });
+      }
+    });
+
+    Timer(const Duration(milliseconds: 50), () {
       if (mounted) {
         setState(() {});
       }

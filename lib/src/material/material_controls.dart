@@ -558,6 +558,15 @@ class _MaterialControlsState extends State<MaterialControls>
     controller.addListener(_updateState);
     chewieController.addListener(_onControllerChange);
 
+    // Add this line for better state synchronization
+    chewieController.addListener(() {
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() {});
+        });
+      }
+    });
+
     _updateState();
 
     if (controller.value.isPlaying || chewieController.autoPlay) {
@@ -574,16 +583,26 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _onExpandCollapse() {
+    // Get current state and log it
     final currentFullscreenState = chewieController.isFullScreen;
+    final newState = !currentFullscreenState;
+
+    print(
+      "_onExpandCollapse: current=$currentFullscreenState, will toggle to=$newState",
+    );
 
     setState(() {
       notifier.hideStuff = true;
     });
 
     if (widget.onToggleFullscreen != null) {
-      widget.onToggleFullscreen!(!currentFullscreenState);
+      widget.onToggleFullscreen!(newState);
     } else {
-      chewieController.toggleFullScreen();
+      if (currentFullscreenState) {
+        chewieController.exitFullScreen();
+      } else {
+        chewieController.enterFullScreen();
+      }
     }
 
     _showAfterExpandCollapseTimer = Timer(
@@ -597,7 +616,7 @@ class _MaterialControlsState extends State<MaterialControls>
       },
     );
 
-    Timer(const Duration(milliseconds: 100), () {
+    Timer(const Duration(milliseconds: 50), () {
       if (mounted) {
         setState(() {});
       }
