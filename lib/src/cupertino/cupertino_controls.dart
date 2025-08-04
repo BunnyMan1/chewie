@@ -107,7 +107,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
                     )
               else
                 _buildHitArea(),
-                
+
               if (widget.onClose != null && !chewieController.isFirstPlay)
                 _buildTopRightCloseButton(
                   backgroundColor,
@@ -858,6 +858,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     if (!mounted) return;
 
     final bool buffering = getIsBuffering(controller);
+    final isFinished = _latestValue.position >= _latestValue.duration;
 
     // display the progress bar indicator only after the buffering delay if it has been set
     if (chewieController.progressIndicatorDelay != null) {
@@ -878,6 +879,17 @@ class _CupertinoControlsState extends State<CupertinoControls>
     setState(() {
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
+
+      if (isFinished) {
+        if (chewieController.isFirstPlay) {
+          chewieController.isFirstPlay = false;
+          if (chewieController.fullScreenByDefault &&
+              chewieController.isFullScreen) {
+            chewieController.exitFullScreen();
+          }
+        }
+        notifier.hideStuffNoState(false);
+      }
     });
   }
 }

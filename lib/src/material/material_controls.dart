@@ -665,6 +665,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _updateState() {
     if (!mounted) return;
+    final isFinished = _latestValue.position >= _latestValue.duration;
 
     final bool buffering = getIsBuffering(controller);
 
@@ -687,6 +688,17 @@ class _MaterialControlsState extends State<MaterialControls>
     setState(() {
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
+
+      if (isFinished) {
+        if (chewieController.isFirstPlay) {
+          chewieController.isFirstPlay = false;
+          if (chewieController.fullScreenByDefault &&
+              chewieController.isFullScreen) {
+            chewieController.exitFullScreen();
+          }
+        }
+        notifier.hideStuffNoState(false);
+      }
     });
   }
 
@@ -716,7 +728,7 @@ class _MaterialControlsState extends State<MaterialControls>
           bufferedColor: customBlue.withValues(alpha: 0.3),
           backgroundColor: Colors.white.withValues(alpha: 0.3),
         ),
-        draggableProgressBar: false, // Disable dragging
+        draggableProgressBar: false,
       ),
     );
   }
