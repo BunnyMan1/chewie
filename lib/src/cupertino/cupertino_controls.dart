@@ -107,13 +107,14 @@ class _CupertinoControlsState extends State<CupertinoControls>
                     )
               else
                 _buildHitArea(),
-
-              _buildTopRightCloseButton(
-                backgroundColor,
-                iconColor,
-                barHeight,
-                buttonPadding,
-              ),
+                
+              if (widget.onClose != null && !chewieController.isFirstPlay)
+                _buildTopRightCloseButton(
+                  backgroundColor,
+                  iconColor,
+                  barHeight,
+                  buttonPadding,
+                ),
 
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -645,6 +646,14 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
+    final isFinished = _latestValue.position >= _latestValue.duration;
+    final showFullscreen =
+        chewieController.allowFullScreen &&
+        (!chewieController.fullScreenByDefault ||
+            (chewieController.fullScreenByDefault &&
+                !chewieController.isFirstPlay)) &&
+        !isFinished;
+
     return Container(
       height: barHeight,
       margin: EdgeInsets.only(
@@ -654,8 +663,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
       ),
       child: Row(
         children: <Widget>[
-          const Spacer(), 
-          if (chewieController.allowFullScreen)
+          const Spacer(),
+          if (chewieController.allowFullScreen && showFullscreen)
             _buildExpandButton(
               backgroundColor,
               iconColor,

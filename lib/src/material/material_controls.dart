@@ -92,8 +92,8 @@ class _MaterialControlsState extends State<MaterialControls>
               else
                 _buildHitArea(),
 
-              // Top Right Close Button
-              _buildTopRightCloseButton(),
+              if (widget.onClose != null && !chewieController.isFirstPlay)
+                _buildTopRightCloseButton(),
 
               // Top Left Action Bar
               _buildTopLeftActionBar(),
@@ -317,6 +317,13 @@ class _MaterialControlsState extends State<MaterialControls>
 
   AnimatedOpacity _buildBottomBar(BuildContext context) {
     final iconColor = Theme.of(context).textTheme.labelLarge!.color;
+    final isFinished = _latestValue.position >= _latestValue.duration;
+    final showFullscreen =
+        chewieController.allowFullScreen &&
+        (!chewieController.fullScreenByDefault ||
+            (chewieController.fullScreenByDefault &&
+                !chewieController.isFirstPlay)) &&
+        !isFinished;
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -347,7 +354,8 @@ class _MaterialControlsState extends State<MaterialControls>
                     if (chewieController.allowMuting)
                       _buildMuteButton(controller),
                     const Spacer(),
-                    if (chewieController.allowFullScreen) _buildExpandButton(),
+                    if (chewieController.allowFullScreen && showFullscreen)
+                      _buildExpandButton(),
                   ],
                 ),
               ),
