@@ -190,17 +190,11 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildTopBar() {
-    final isFinished = _latestValue.position >= _latestValue.duration;
-    final showFullscreen =
-        chewieController.allowFullScreen &&
-        (!chewieController.fullScreenByDefault ||
-            (chewieController.fullScreenByDefault &&
-                !chewieController.isFirstPlay)) &&
-        !isFinished;
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
       child: Row(
         children: [
+          Spacer(),
           if (widget.onClose != null && !chewieController.isFirstPlay)
             _buildIconbutton(
               onTap: closePlayer,
@@ -209,22 +203,6 @@ class _MaterialControlsState extends State<MaterialControls>
               padding: const EdgeInsets.all(4),
               constraints: BoxConstraints(maxHeight: 36, maxWidth: 36),
               iconSize: 24,
-            ),
-          if (showFullscreen) const Spacer(),
-          if (showFullscreen)
-            _buildIconbutton(
-              padding: const EdgeInsets.all(4),
-              constraints: const BoxConstraints(maxHeight: 36, maxWidth: 36),
-              iconSize: 24,
-              icon:
-                  chewieController.isFullScreen
-                      ? Icons.fullscreen_exit_rounded
-                      : Icons.fullscreen_rounded,
-              onTap: () {
-                chewieController.isFullScreen
-                    ? chewieController.exitFullScreen()
-                    : chewieController.enterFullScreen();
-              },
             ),
         ],
       ),
