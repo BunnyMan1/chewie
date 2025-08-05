@@ -342,60 +342,69 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final bool shouldShowTimerAndBar =
         !chewieController.isLive && !chewieController.isFirstPlay;
 
-    return SafeArea(
-      bottom: chewieController.isFullScreen,
-      minimum: chewieController.controlsSafeAreaMinimum,
-      child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: Container(
-          color: Colors.transparent,
-          alignment: Alignment.bottomCenter,
-          margin: EdgeInsets.all(marginSize),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10.0),
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-              child: Container(
-                height: barHeight,
-                color: backgroundColor,
-                child:
-                    chewieController.isLive
-                        ? Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            if (!chewieController.isFirstPlay || isFinished)
-                              _buildPlayPause(controller, iconColor, barHeight),
-                            _buildLive(iconColor),
-                          ],
-                        )
-                        : shouldShowTimerAndBar || isFinished
-                        ? Row(
-                          children: <Widget>[
-                            _buildPlayPause(controller, iconColor, barHeight),
-                            _buildPosition(iconColor),
-                            _buildProgressBar(),
-                            _buildRemaining(iconColor),
-                            if (chewieController.allowPlaybackSpeedChanging)
-                              _buildSpeedButton(
-                                controller,
-                                iconColor,
-                                barHeight,
-                              ),
-                            if (chewieController.additionalOptions != null &&
-                                chewieController
-                                    .additionalOptions!(context)
-                                    .isNotEmpty)
-                              _buildOptionsButton(iconColor, barHeight),
-                          ],
-                        )
-                        : Container(),
+    return shouldShowTimerAndBar || isFinished
+        ? SafeArea(
+          bottom: chewieController.isFullScreen,
+          minimum: chewieController.controlsSafeAreaMinimum,
+          child: AnimatedOpacity(
+            opacity: notifier.hideStuff ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            child: Container(
+              color: Colors.transparent,
+              alignment: Alignment.bottomCenter,
+              margin: EdgeInsets.all(marginSize),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                  child: Container(
+                    height: barHeight,
+                    color: backgroundColor,
+                    child:
+                        chewieController.isLive
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                if (!chewieController.isFirstPlay || isFinished)
+                                  _buildPlayPause(
+                                    controller,
+                                    iconColor,
+                                    barHeight,
+                                  ),
+                                _buildLive(iconColor),
+                              ],
+                            )
+                            : Row(
+                              children: <Widget>[
+                                _buildPlayPause(
+                                  controller,
+                                  iconColor,
+                                  barHeight,
+                                ),
+                                _buildPosition(iconColor),
+                                _buildProgressBar(),
+                                _buildRemaining(iconColor),
+                                if (chewieController.allowPlaybackSpeedChanging)
+                                  _buildSpeedButton(
+                                    controller,
+                                    iconColor,
+                                    barHeight,
+                                  ),
+                                if (chewieController.additionalOptions !=
+                                        null &&
+                                    chewieController
+                                        .additionalOptions!(context)
+                                        .isNotEmpty)
+                                  _buildOptionsButton(iconColor, barHeight),
+                              ],
+                            ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    );
+        )
+        : Container();
   }
 
   Widget _buildLive(Color iconColor) {
