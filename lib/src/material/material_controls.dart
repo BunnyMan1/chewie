@@ -82,17 +82,26 @@ class _MaterialControlsState extends State<MaterialControls>
 
               Column(
                 children: [
-                  Row(
-                    children: [
-                      Spacer(),
-                      if (widget.onClose != null &&
-                          !chewieController.isFirstPlay)
-                        _buildIconbutton(
-                          onTap: closePlayer,
-                          showWhenFinshedPlayingVideo: true,
-                          icon: Icons.close,
-                        ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Row(
+                      children: [
+                        Spacer(),
+                        if (widget.onClose != null &&
+                            !chewieController.isFirstPlay)
+                          _buildIconbutton(
+                            onTap: closePlayer,
+                            showWhenFinshedPlayingVideo: true,
+                            icon: Icons.close,
+                            padding: const EdgeInsets.all(4),
+                            constraints: BoxConstraints(
+                              maxHeight: 36,
+                              maxWidth: 36,
+                            ),
+                            iconSize: 24,
+                          ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -148,59 +157,56 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildIconbutton({
-  required VoidCallback onTap,
-  required IconData? icon,
-  bool showWhenFinshedPlayingVideo = false,
-  double iconSize = 20.0, 
-  EdgeInsetsGeometry padding = const EdgeInsets.all(4.0), 
-  bool alwayShow = false,
-  Widget? iconWidget,
-  BoxConstraints? constraints,
-}) {
-  final isFinished = _latestValue.position >= _latestValue.duration;
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      color: Colors.transparent,
-      child: Center(
-        child: AnimatedOpacity(
-          opacity:
-              alwayShow
-                  ? 1
-                  : showWhenFinshedPlayingVideo && isFinished
-                  ? 1.0
-                  : !dragging && !notifier.hideStuff
-                  ? 1.0
-                  : 0.0,
-          duration: const Duration(milliseconds: 300),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.black54,
-              shape: BoxShape.circle,
-            ),
-            child: Padding(
-              padding: padding,
-              child:
-                  iconWidget ??
-                  IconButton(
-                    constraints: constraints ?? const BoxConstraints(
-                      minWidth: 24, 
-                      minHeight: 24,
-                      maxWidth: 32,
-                      maxHeight: 32,
+    required VoidCallback onTap,
+    required IconData? icon,
+    bool showWhenFinshedPlayingVideo = false,
+    double iconSize = 32.0,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(8.0),
+    bool alwayShow = false,
+    Widget? iconWidget,
+    BoxConstraints? constraints,
+  }) {
+    final isFinished = _latestValue.position >= _latestValue.duration;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        color: Colors.transparent,
+        child: Center(
+          child: AnimatedOpacity(
+            opacity:
+                alwayShow
+                    ? 1
+                    : showWhenFinshedPlayingVideo && isFinished
+                    ? 1.0
+                    : !dragging && !notifier.hideStuff
+                    ? 1.0
+                    : 0.0,
+            duration: const Duration(milliseconds: 300),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.black54,
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: padding,
+                // Always set the iconSize on the IconButton, not on the Icon itself:
+                // https://github.com/flutter/flutter/issues/52980
+                child:
+                    iconWidget ??
+                    IconButton(
+                      constraints: constraints,
+                      iconSize: iconSize,
+                      padding: EdgeInsets.zero,
+                      icon: Icon(icon, color: Colors.white),
+                      onPressed: onTap,
                     ),
-                    iconSize: iconSize,
-                    padding: EdgeInsets.zero,
-                    icon: Icon(icon, color: Colors.white),
-                    onPressed: onTap,
-                  ),
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   AnimatedOpacity _buildBottomBar(BuildContext context) {
     final iconColor = Theme.of(context).textTheme.labelLarge!.color;
