@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
@@ -8,7 +7,6 @@ import 'package:in_app_picture_in_picture/src/notifiers/index.dart';
 import 'package:in_app_picture_in_picture/src/player_with_controls.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 typedef ChewieRoutePageBuilder =
     Widget Function(
@@ -23,10 +21,16 @@ typedef ChewieRoutePageBuilder =
 /// `video_player` is pretty low level. Chewie wraps it in a friendly skin to
 /// make it easy to use!
 class Chewie extends StatefulWidget {
-  const Chewie({super.key, required this.controller});
+  const Chewie({
+    super.key,
+    required this.controller,
+    required this.onToggleFullscreen,
+  });
 
   /// The [ChewieController]
   final ChewieController controller;
+
+  final void Function(bool newState) onToggleFullscreen;
 
   @override
   ChewieState createState() {
@@ -36,8 +40,6 @@ class Chewie extends StatefulWidget {
 
 class ChewieState extends State<Chewie> {
   bool _isFullScreen = false;
-
-  bool get isControllerFullScreen => widget.controller.isFullScreen;
   late PlayerNotifier notifier;
 
   @override
@@ -57,35 +59,18 @@ class ChewieState extends State<Chewie> {
   @override
   void didUpdateWidget(Chewie oldWidget) {
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller.removeListener(listener);
       widget.controller.addListener(listener);
     }
     super.didUpdateWidget(oldWidget);
-    if (_isFullScreen != isControllerFullScreen) {
-      widget.controller._isFullScreen = _isFullScreen;
-    }
   }
 
   Future<void> listener() async {
-    if (isControllerFullScreen && !_isFullScreen) {
-      _isFullScreen = isControllerFullScreen;
-      if (mounted && context.mounted) {
-        try {
-          await _pushFullScreenWidget(context);
-        } catch (e) {
-          _isFullScreen = false;
-          widget.controller._isFullScreen = false;
-        }
-      }
-    } else if (_isFullScreen && !isControllerFullScreen) {
-      if (mounted && Navigator.canPop(context)) {
-        Navigator.of(
-          context,
-          rootNavigator: widget.controller.useRootNavigator,
-        ).pop();
-      }
+    if (widget.controller.isFullScreen && !_isFullScreen) {
+      _isFullScreen = true;
+    } else if (_isFullScreen) {
       _isFullScreen = false;
     }
+    widget.onToggleFullscreen(_isFullScreen);
   }
 
   @override
@@ -96,100 +81,6 @@ class ChewieState extends State<Chewie> {
         value: notifier,
         builder: (context, w) => const PlayerWithControls(),
       ),
-    );
-  }
-
-  Widget _buildFullScreenVideo(
-    BuildContext context,
-    Animation<double> animation,
-    ChewieControllerProvider controllerProvider,
-  ) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Container(
-        alignment: Alignment.center,
-        color: Colors.black,
-        child: controllerProvider,
-      ),
-    );
-  }
-
-  AnimatedWidget _defaultRoutePageBuilder(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    ChewieControllerProvider controllerProvider,
-  ) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget? child) {
-        return _buildFullScreenVideo(context, animation, controllerProvider);
-      },
-    );
-  }
-
-  Widget _fullScreenRoutePageBuilder(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
-    final controllerProvider = ChewieControllerProvider(
-      controller: widget.controller,
-      child: ChangeNotifierProvider<PlayerNotifier>.value(
-        value: notifier,
-        builder: (context, w) => const PlayerWithControls(),
-      ),
-    );
-
-    if (widget.controller.routePageBuilder == null) {
-      return _defaultRoutePageBuilder(
-        context,
-        animation,
-        secondaryAnimation,
-        controllerProvider,
-      );
-    }
-    return widget.controller.routePageBuilder!(
-      context,
-      animation,
-      secondaryAnimation,
-      controllerProvider,
-    );
-  }
-
-  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
-    final TransitionRoute<void> route = PageRouteBuilder<void>(
-      pageBuilder: _fullScreenRoutePageBuilder,
-    );
-
-    onEnterFullScreen();
-
-    if (!widget.controller.allowedScreenSleep) {
-      WakelockPlus.enable();
-    }
-
-    await Navigator.of(
-      context,
-      rootNavigator: widget.controller.useRootNavigator,
-    ).push(route);
-
-    if (kIsWeb) {
-      _reInitializeControllers();
-    }
-
-    _isFullScreen = false;
-    widget.controller.exitFullScreen();
-
-    if (!widget.controller.allowedScreenSleep) {
-      WakelockPlus.disable();
-    }
-
-    SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: widget.controller.systemOverlaysAfterFullScreen,
-    );
-    SystemChrome.setPreferredOrientations(
-      widget.controller.deviceOrientationsAfterFullScreen,
     );
   }
 
@@ -229,18 +120,6 @@ class ChewieState extends State<Chewie> {
         SystemChrome.setPreferredOrientations(DeviceOrientation.values);
       }
     }
-  }
-
-  ///When viewing full screen on web, returning from full screen causes original video to lose the picture.
-  ///We re initialise controllers for web only when returning from full screen
-  void _reInitializeControllers() {
-    final prevPosition = widget.controller.videoPlayerController.value.position;
-    widget.controller.videoPlayerController.initialize().then((_) async {
-      widget.controller._initialize();
-      widget.controller.videoPlayerController.seekTo(prevPosition);
-      await widget.controller.videoPlayerController.play();
-      widget.controller.videoPlayerController.pause();
-    });
   }
 }
 
@@ -621,7 +500,6 @@ class ChewieController extends ChangeNotifier {
   }
 
   bool _isFullScreen = false;
-  bool _hasPlayedOnce = false;
 
   bool get isFullScreen => _isFullScreen;
 
@@ -650,21 +528,12 @@ class ChewieController extends ChangeNotifier {
     if (fullScreenByDefault) {
       videoPlayerController.addListener(_fullScreenListener);
     }
-
-    // Add listener for initial play completion
-    videoPlayerController.addListener(_playListener);
   }
 
   Future<void> _fullScreenListener() async {
     if (videoPlayerController.value.isPlaying && !_isFullScreen) {
       enterFullScreen();
       videoPlayerController.removeListener(_fullScreenListener);
-    }
-  }
-
-  void _playListener() {
-    if (videoPlayerController.value.isPlaying && !_hasPlayedOnce) {
-      _hasPlayedOnce = true;
     }
   }
 
@@ -721,12 +590,6 @@ class ChewieController extends ChangeNotifier {
 
   void setSubtitle(List<Subtitle> newSubtitle) {
     subtitle = Subtitles(newSubtitle);
-  }
-
-  @override
-  void dispose() {
-    videoPlayerController.removeListener(_playListener);
-    super.dispose();
   }
 }
 
