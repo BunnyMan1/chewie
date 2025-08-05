@@ -85,7 +85,7 @@ class _MaterialControlsState extends State<MaterialControls>
                 left: 0,
                 right: 0,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0, top: 8.0),
+                  padding: const EdgeInsets.only(right: 8.0),
                   child: Row(
                     children: [
                       const Spacer(),
