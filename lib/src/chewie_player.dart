@@ -548,9 +548,9 @@ class ChewieController extends ChangeNotifier {
     }
   }
 
-  void enterFullScreen() {
+  void enterFullScreen({bool notify = true}) {
     _isFullScreen = true;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   void exitFullScreen() {
