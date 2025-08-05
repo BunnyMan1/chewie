@@ -82,6 +82,10 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final barHeight = orientation == Orientation.portrait ? 30.0 : 47.0;
     final buttonPadding = orientation == Orientation.portrait ? 16.0 : 24.0;
 
+    // Get safe area insets for proper positioning
+    final mediaQuery = MediaQuery.of(context);
+    final safeAreaTop = mediaQuery.padding.top;
+
     return MouseRegion(
       onHover: (_) => _cancelAndRestartTimer(),
       child: GestureDetector(
@@ -100,17 +104,15 @@ class _CupertinoControlsState extends State<CupertinoControls>
               else
                 _buildHitArea(),
 
-              SafeArea(
-                child: Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: _buildTopBar(
-                    backgroundColor,
-                    iconColor,
-                    barHeight,
-                    buttonPadding,
-                  ),
+              Positioned(
+                top: safeAreaTop,
+                left: 0,
+                right: 0,
+                child: _buildTopBar(
+                  backgroundColor,
+                  iconColor,
+                  barHeight,
+                  buttonPadding,
                 ),
               ),
 
