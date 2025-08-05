@@ -447,52 +447,55 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     return Container(
-      margin: const EdgeInsets.only(top: 16.0, left: 8.0, right: 8.0),
-      child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: SizedBox(
-          height: barHeight,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              // Left side - Close button
-              if (widget.onClose != null && !chewieController.isFirstPlay)
-                _buildCloseButton(
-                  controller,
-                  backgroundColor,
-                  iconColor,
-                  barHeight,
-                  buttonPadding,
-                )
-              else
-                SizedBox(width: barHeight),
-              // Right side - Fullscreen and Mute buttons
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (chewieController.allowFullScreen &&
-                      (!chewieController.fullScreenByDefault ||
-                          (chewieController.fullScreenByDefault &&
-                              !chewieController.isFirstPlay)))
-                    _buildExpandButton(
-                      backgroundColor,
-                      iconColor,
-                      barHeight,
-                      buttonPadding,
-                    ),
-                  const SizedBox(width: 8),
-                  if (chewieController.allowMuting)
-                    _buildMuteButton(
-                      controller,
-                      backgroundColor,
-                      iconColor,
-                      barHeight,
-                      buttonPadding,
-                    ),
-                ],
-              ),
-            ],
+      margin: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
+      child: SafeArea(
+        bottom: false,
+        child: AnimatedOpacity(
+          opacity: notifier.hideStuff ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 300),
+          child: SizedBox(
+            height: barHeight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                // Left side - Close button
+                if (widget.onClose != null && !chewieController.isFirstPlay)
+                  _buildCloseButton(
+                    controller,
+                    backgroundColor,
+                    iconColor,
+                    barHeight,
+                    buttonPadding,
+                  )
+                else
+                  SizedBox(width: barHeight),
+                // Right side - Fullscreen and Mute buttons
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (chewieController.allowFullScreen &&
+                        (!chewieController.fullScreenByDefault ||
+                            (chewieController.fullScreenByDefault &&
+                                !chewieController.isFirstPlay)))
+                      _buildExpandButton(
+                        backgroundColor,
+                        iconColor,
+                        barHeight,
+                        buttonPadding,
+                      ),
+                    const SizedBox(width: 8),
+                    if (chewieController.allowMuting)
+                      _buildMuteButton(
+                        controller,
+                        backgroundColor,
+                        iconColor,
+                        barHeight,
+                        buttonPadding,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
