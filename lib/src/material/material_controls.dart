@@ -80,35 +80,38 @@ class _MaterialControlsState extends State<MaterialControls>
               else
                 _buildHitArea(),
 
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: Row(
-                      children: [
-                        Spacer(),
-                        if (widget.onClose != null &&
-                            !chewieController.isFirstPlay)
-                          _buildIconbutton(
-                            onTap: closePlayer,
-                            showWhenFinshedPlayingVideo: true,
-                            icon: Icons.close,
-                            padding: const EdgeInsets.all(4),
-                            constraints: BoxConstraints(
-                              maxHeight: 36,
-                              maxWidth: 36,
-                            ),
-                            iconSize: 24,
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0, top: 8.0),
+                  child: Row(
+                    children: [
+                      const Spacer(),
+                      if (widget.onClose != null &&
+                          !chewieController.isFirstPlay)
+                        _buildIconbutton(
+                          onTap: closePlayer,
+                          showWhenFinshedPlayingVideo: true,
+                          icon: Icons.close,
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            maxHeight: 36,
+                            maxWidth: 36,
                           ),
-                      ],
-                    ),
+                          iconSize: 24,
+                        ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              const Spacer(),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[_buildBottomBar(context)],
+
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildBottomBar(context),
               ),
             ],
           ),
@@ -226,7 +229,7 @@ class _MaterialControlsState extends State<MaterialControls>
       duration: const Duration(milliseconds: 300),
       child: Container(
         height: barHeight + (chewieController.isFullScreen ? 10.0 : 0),
-        padding: EdgeInsets.only(left: 20, right: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20),
         child: SafeArea(
           top: false,
           bottom: chewieController.isFullScreen,
