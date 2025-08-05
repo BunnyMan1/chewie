@@ -55,23 +55,21 @@ class PlayerWithControls extends StatelessWidget {
                     BuildContext context,
                     PlayerNotifier notifier,
                     Widget? widget,
-                  ) => Visibility(
-                    visible: !notifier.hideStuff,
-                    child: AnimatedOpacity(
+                  ) => AnimatedOpacity(
                       opacity: notifier.hideStuff ? 0.0 : 0.8,
                       duration: const Duration(milliseconds: 250),
-                      child: const DecoratedBox(
-                        decoration: BoxDecoration(color: Colors.black54),
-                        child: SizedBox.expand(),
+                      child: Container(
+                        decoration: const BoxDecoration(color: Colors.black54),
+                        child: Container(),
                       ),
                     ),
-                  ),
             ),
           if (!chewieController.isFullScreen)
             buildControls(context, chewieController)
           else
             SafeArea(
               bottom: false,
+              top: false,
               child: buildControls(context, chewieController),
             ),
         ],
@@ -94,19 +92,15 @@ class PlayerWithControls extends StatelessWidget {
       return child;
     }
 
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return Center(
-          child: SizedBox(
-            height: constraints.maxHeight,
-            width: constraints.maxWidth,
-            child: AspectRatio(
-              aspectRatio: calculateAspectRatio(context),
-              child: buildPlayerWithControls(chewieController, context),
-            ),
-          ),
-        );
-      },
+    return Center(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: AspectRatio(
+          aspectRatio: calculateAspectRatio(context),
+          child: buildPlayerWithControls(chewieController, context),
+        ),
+      ),
     );
   }
 }
