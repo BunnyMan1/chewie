@@ -91,18 +91,17 @@ class _MaterialControlsState extends State<MaterialControls>
                       const Spacer(),
                       if (widget.onClose != null &&
                           !chewieController.isFirstPlay)
-                        // _buildIconbutton(
-                        //   onTap: closePlayer,
-                        //   showWhenFinshedPlayingVideo: true,
-                        //   icon: Icons.close,
-                        //   padding: const EdgeInsets.all(4),
-                        //   constraints: const BoxConstraints(
-                        //     maxHeight: 36,
-                        //     maxWidth: 36,
-                        //   ),
-                        //   iconSize: 24,
-                        // ),
-                        _buildButton()
+                        _buildIconbutton(
+                          onTap: closePlayer,
+                          showWhenFinshedPlayingVideo: true,
+                          icon: Icons.close,
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            maxHeight: 36,
+                            maxWidth: 36,
+                          ),
+                          iconSize: 24,
+                        ),
                     ],
                   ),
                 ),
@@ -158,26 +157,6 @@ class _MaterialControlsState extends State<MaterialControls>
         setState(() {});
       }
     });
-  }
-
-  Widget _buildButton() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.black54,
-        shape: BoxShape.circle,
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(8),
-        // Always set the iconSize on the IconButton, not on the Icon itself:
-        // https://github.com/flutter/flutter/issues/52980
-        child: IconButton(
-          iconSize: 24,
-          padding: EdgeInsets.zero,
-          icon: Icon(Icons.close, color: Colors.white),
-          onPressed: () {},
-        ),
-      ),
-    );
   }
 
   Widget _buildIconbutton({
