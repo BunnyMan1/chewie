@@ -36,7 +36,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     with SingleTickerProviderStateMixin {
   late PlayerNotifier notifier;
   late VideoPlayerValue _latestValue;
-  double? _latestVolume;
   Timer? _hideTimer;
   final marginSize = 5.0;
   Timer? _expandCollapseTimer;
@@ -333,52 +332,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     );
   }
 
-  GestureDetector _buildMuteButton(
-    VideoPlayerController controller,
-    Color backgroundColor,
-    Color iconColor,
-    double barHeight,
-    double buttonPadding,
-  ) {
-    return GestureDetector(
-      onTap: () {
-        _cancelAndRestartTimer();
-
-        if (_latestValue.volume == 0) {
-          controller.setVolume(_latestVolume ?? 0.5);
-        } else {
-          _latestVolume = controller.value.volume;
-          controller.setVolume(0.0);
-        }
-      },
-      child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: ColoredBox(
-              color: backgroundColor,
-              child: Container(
-                height: barHeight,
-                padding: EdgeInsets.only(
-                  left: buttonPadding,
-                  right: buttonPadding,
-                ),
-                child: Icon(
-                  _latestValue.volume > 0 ? Icons.volume_up : Icons.volume_off,
-                  color: iconColor,
-                  size: 16,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   GestureDetector _buildPlayPause(
     VideoPlayerController controller,
     Color iconColor,
@@ -405,7 +358,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     return Container(
-      margin: const EdgeInsets.only(top: 0.0, left: 8.0, right: 8.0),
+      margin: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
@@ -414,7 +367,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              // Left side - Close button
               if (widget.onClose != null && !chewieController.isFirstPlay)
                 _buildCloseButton(
                   controller,
@@ -422,34 +374,18 @@ class _CupertinoControlsState extends State<CupertinoControls>
                   iconColor,
                   barHeight,
                   buttonPadding,
-                )
-              else
-                SizedBox(width: barHeight),
-              // Right side - Fullscreen and Mute buttons
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (chewieController.allowFullScreen &&
-                      (!chewieController.fullScreenByDefault ||
-                          (chewieController.fullScreenByDefault &&
-                              !chewieController.isFirstPlay)))
-                    _buildExpandButton(
-                      backgroundColor,
-                      iconColor,
-                      barHeight,
-                      buttonPadding,
-                    ),
-                  const SizedBox(width: 8),
-                  if (chewieController.allowMuting)
-                    _buildMuteButton(
-                      controller,
-                      backgroundColor,
-                      iconColor,
-                      barHeight,
-                      buttonPadding,
-                    ),
-                ],
-              ),
+                ),
+
+              if (chewieController.allowFullScreen &&
+                  (!chewieController.fullScreenByDefault ||
+                      (chewieController.fullScreenByDefault &&
+                          !chewieController.isFirstPlay)))
+                _buildExpandButton(
+                  backgroundColor,
+                  iconColor,
+                  barHeight,
+                  buttonPadding,
+                ),
             ],
           ),
         ),
