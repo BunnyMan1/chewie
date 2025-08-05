@@ -73,19 +73,11 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
   bool _shouldShowCloseButton() {
     if (widget.onClose == null) return false;
-
-    // Show close button ONLY if:
-    // 1. Video is skippable (always), OR
-    // 2. First play is completed (not just started)
     return widget.isVideoSkippable || !chewieController.isFirstPlay;
   }
 
   bool _shouldShowFullscreenButton() {
     if (!chewieController.allowFullScreen) return false;
-
-    // Show fullscreen button ONLY if:
-    // 1. Video is NOT force fullscreen (always), OR
-    // 2. First play is completed (not just started)
     return !widget.isForceFullscreen || !chewieController.isFirstPlay;
   }
 
@@ -129,14 +121,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
                     )
               else
                 _buildHitArea(),
-
-              if (_shouldShowCloseButton())
-                _buildTopRightCloseButton(
-                  backgroundColor,
-                  iconColor,
-                  barHeight,
-                  buttonPadding,
-                ),
 
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -214,7 +198,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     });
   }
 
-  Widget _buildTopRightCloseButton(
+  Widget _buildCloseButton(
     Color backgroundColor,
     Color iconColor,
     double barHeight,
@@ -222,33 +206,29 @@ class _CupertinoControlsState extends State<CupertinoControls>
   ) {
     if (widget.onClose == null) return const SizedBox.shrink();
 
-    return Positioned(
-      top: 0,
-      right: 0,
-      child: SafeArea(
-        child: AnimatedOpacity(
-          opacity: notifier.hideStuff ? 0.0 : 1.0,
-          duration: const Duration(milliseconds: 300),
-          child: Container(
-            margin: EdgeInsets.all(
-              8.0 + MediaQuery.of(context).padding.top * 0.1,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 10.0),
+    return SafeArea(
+      child: AnimatedOpacity(
+        opacity: notifier.hideStuff ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: Container(
+          margin: EdgeInsets.all(
+            8.0 + MediaQuery.of(context).padding.top * 0.1,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10.0),
+              child: Container(
+                color: backgroundColor,
                 child: Container(
-                  color: backgroundColor,
-                  child: Container(
-                    height: barHeight,
-                    padding: EdgeInsets.only(
-                      left: buttonPadding,
-                      right: buttonPadding,
-                    ),
-                    child: GestureDetector(
-                      onTap: widget.onClose,
-                      child: Icon(Icons.close, color: iconColor, size: 16),
-                    ),
+                  height: barHeight,
+                  padding: EdgeInsets.only(
+                    left: buttonPadding,
+                    right: buttonPadding,
+                  ),
+                  child: GestureDetector(
+                    onTap: widget.onClose,
+                    child: Icon(Icons.close, color: iconColor, size: 16),
                   ),
                 ),
               ),
@@ -341,6 +321,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
     Color iconColor,
     double barHeight,
   ) {
+    final bool isFinished = _latestValue.position >= _latestValue.duration;
+
     return SafeArea(
       bottom: chewieController.isFullScreen,
       minimum: chewieController.controlsSafeAreaMinimum,
@@ -363,19 +345,23 @@ class _CupertinoControlsState extends State<CupertinoControls>
                         ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            _buildPlayPause(controller, iconColor, barHeight),
+                            if (!chewieController.isFirstPlay || isFinished)
+                              _buildPlayPause(controller, iconColor, barHeight),
                             _buildLive(iconColor),
                           ],
                         )
                         : Row(
                           children: <Widget>[
-                            _buildSkipBack(iconColor, barHeight),
-                            _buildPlayPause(controller, iconColor, barHeight),
-                            _buildSkipForward(iconColor, barHeight),
+                            // _buildSkipBack(iconColor, barHeight),
+                            if (!chewieController.isFirstPlay || isFinished)
+                              _buildPlayPause(controller, iconColor, barHeight),
+                            // _buildSkipForward(iconColor, barHeight),
                             _buildPosition(iconColor),
-                            _buildProgressBar(),
+                            if (!chewieController.isLive &&
+                                !chewieController.isFirstPlay)
+                              _buildProgressBar(),
                             _buildRemaining(iconColor),
-                            _buildSubtitleToggle(iconColor, barHeight),
+                            // _buildSubtitleToggle(iconColor, barHeight),
                             if (chewieController.allowPlaybackSpeedChanging)
                               _buildSpeedButton(
                                 controller,
@@ -410,21 +396,50 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    return GestureDetector(
-      onTap: () {
-        _onExpandCollapse();
-      },
+    return SafeArea(
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
         child: Container(
-          height: barHeight + (_isCustomFullScreen ? 15.0 : 0),
-          margin: const EdgeInsets.only(right: 8.0),
-          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-          child: Center(
-            child: Icon(
-              _isCustomFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
-              color: Colors.white,
+          margin: EdgeInsets.all(
+            8.0 + MediaQuery.of(context).padding.top * 0.1,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10.0),
+              child: Container(
+                color: backgroundColor,
+                child: Container(
+                  height: barHeight,
+                  padding: EdgeInsets.only(
+                    left: buttonPadding,
+                    right: buttonPadding,
+                  ),
+                  child: GestureDetector(
+                    onTap: () {
+                      _onExpandCollapse();
+                    },
+                    child: AnimatedOpacity(
+                      opacity: notifier.hideStuff ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        height: barHeight + (_isCustomFullScreen ? 15.0 : 0),
+                        margin: const EdgeInsets.only(right: 8.0),
+                        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                        child: Center(
+                          child: Icon(
+                            _isCustomFullScreen
+                                ? Icons.fullscreen_exit
+                                : Icons.fullscreen,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -562,58 +577,58 @@ class _CupertinoControlsState extends State<CupertinoControls>
     );
   }
 
-  Widget _buildSubtitleToggle(Color iconColor, double barHeight) {
-    //if don't have subtitle hiden button
-    if (chewieController.subtitle?.isEmpty ?? true) {
-      return const SizedBox();
-    }
-    return GestureDetector(
-      onTap: _subtitleToggle,
-      child: Container(
-        height: barHeight,
-        color: Colors.transparent,
-        margin: const EdgeInsets.only(right: 10.0),
-        padding: const EdgeInsets.only(left: 6.0, right: 6.0),
-        child: Icon(
-          Icons.subtitles,
-          color: _subtitleOn ? iconColor : Colors.grey[700],
-          size: 16.0,
-        ),
-      ),
-    );
-  }
+  // Widget _buildSubtitleToggle(Color iconColor, double barHeight) {
+  //   //if don't have subtitle hiden button
+  //   if (chewieController.subtitle?.isEmpty ?? true) {
+  //     return const SizedBox();
+  //   }
+  //   return GestureDetector(
+  //     onTap: _subtitleToggle,
+  //     child: Container(
+  //       height: barHeight,
+  //       color: Colors.transparent,
+  //       margin: const EdgeInsets.only(right: 10.0),
+  //       padding: const EdgeInsets.only(left: 6.0, right: 6.0),
+  //       child: Icon(
+  //         Icons.subtitles,
+  //         color: _subtitleOn ? iconColor : Colors.grey[700],
+  //         size: 16.0,
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  void _subtitleToggle() {
-    setState(() {
-      _subtitleOn = !_subtitleOn;
-    });
-  }
+  // void _subtitleToggle() {
+  //   setState(() {
+  //     _subtitleOn = !_subtitleOn;
+  //   });
+  // }
 
-  GestureDetector _buildSkipBack(Color iconColor, double barHeight) {
-    return GestureDetector(
-      onTap: _skipBack,
-      child: Container(
-        height: barHeight,
-        color: Colors.transparent,
-        margin: const EdgeInsets.only(left: 10.0),
-        padding: const EdgeInsets.only(left: 6.0, right: 6.0),
-        child: Icon(CupertinoIcons.gobackward_15, color: iconColor, size: 18.0),
-      ),
-    );
-  }
+  // GestureDetector _buildSkipBack(Color iconColor, double barHeight) {
+  //   return GestureDetector(
+  //     onTap: _skipBack,
+  //     child: Container(
+  //       height: barHeight,
+  //       color: Colors.transparent,
+  //       margin: const EdgeInsets.only(left: 10.0),
+  //       padding: const EdgeInsets.only(left: 6.0, right: 6.0),
+  //       child: Icon(CupertinoIcons.gobackward_15, color: iconColor, size: 18.0),
+  //     ),
+  //   );
+  // }
 
-  GestureDetector _buildSkipForward(Color iconColor, double barHeight) {
-    return GestureDetector(
-      onTap: _skipForward,
-      child: Container(
-        height: barHeight,
-        color: Colors.transparent,
-        padding: const EdgeInsets.only(left: 6.0, right: 8.0),
-        margin: const EdgeInsets.only(right: 8.0),
-        child: Icon(CupertinoIcons.goforward_15, color: iconColor, size: 18.0),
-      ),
-    );
-  }
+  // GestureDetector _buildSkipForward(Color iconColor, double barHeight) {
+  //   return GestureDetector(
+  //     onTap: _skipForward,
+  //     child: Container(
+  //       height: barHeight,
+  //       color: Colors.transparent,
+  //       padding: const EdgeInsets.only(left: 6.0, right: 8.0),
+  //       margin: const EdgeInsets.only(right: 8.0),
+  //       child: Icon(CupertinoIcons.goforward_15, color: iconColor, size: 18.0),
+  //     ),
+  //   );
+  // }
 
   GestureDetector _buildSpeedButton(
     VideoPlayerController controller,
@@ -685,6 +700,13 @@ class _CupertinoControlsState extends State<CupertinoControls>
       ),
       child: Row(
         children: <Widget>[
+          if (_shouldShowCloseButton())
+            _buildCloseButton(
+              backgroundColor,
+              iconColor,
+              barHeight,
+              buttonPadding,
+            ),
           const Spacer(),
           if (chewieController.allowFullScreen && showFullscreen)
             if (_shouldShowFullscreenButton())
@@ -778,21 +800,21 @@ class _CupertinoControlsState extends State<CupertinoControls>
         child: CupertinoVideoProgressBar(
           controller,
           // Disable seeking by commenting out drag callbacks
-          // onDragStart: () {
-          //   setState(() {
-          //     _dragging = true;
-          //   });
-          //   _hideTimer?.cancel();
-          // },
-          // onDragUpdate: () {
-          //   _hideTimer?.cancel();
-          // },
-          // onDragEnd: () {
-          //   setState(() {
-          //     _dragging = false;
-          //   });
-          //   _startHideTimer();
-          // },
+          onDragStart: () {
+            setState(() {
+              dragging = true;
+            });
+            _hideTimer?.cancel();
+          },
+          onDragUpdate: () {
+            _hideTimer?.cancel();
+          },
+          onDragEnd: () {
+            setState(() {
+              dragging = false;
+            });
+            _startHideTimer();
+          },
           colors: ChewieProgressColors(
             playedColor: customBlue,
             handleColor: customBlue,
@@ -832,31 +854,31 @@ class _CupertinoControlsState extends State<CupertinoControls>
     });
   }
 
-  Future<void> _skipBack() async {
-    _cancelAndRestartTimer();
-    final beginning = Duration.zero.inMilliseconds;
-    final skip =
-        (_latestValue.position - const Duration(seconds: 15)).inMilliseconds;
-    await controller.seekTo(Duration(milliseconds: math.max(skip, beginning)));
-    // Restoring the video speed to selected speed
-    // A delay of 1 second is added to ensure a smooth transition of speed after reversing the video as reversing is an asynchronous function
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      controller.setPlaybackSpeed(selectedSpeed);
-    });
-  }
+  // Future<void> _skipBack() async {
+  //   _cancelAndRestartTimer();
+  //   final beginning = Duration.zero.inMilliseconds;
+  //   final skip =
+  //       (_latestValue.position - const Duration(seconds: 15)).inMilliseconds;
+  //   await controller.seekTo(Duration(milliseconds: math.max(skip, beginning)));
+  //   // Restoring the video speed to selected speed
+  //   // A delay of 1 second is added to ensure a smooth transition of speed after reversing the video as reversing is an asynchronous function
+  //   Future.delayed(const Duration(milliseconds: 1000), () {
+  //     controller.setPlaybackSpeed(selectedSpeed);
+  //   });
+  // }
 
-  Future<void> _skipForward() async {
-    _cancelAndRestartTimer();
-    final end = _latestValue.duration.inMilliseconds;
-    final skip =
-        (_latestValue.position + const Duration(seconds: 15)).inMilliseconds;
-    await controller.seekTo(Duration(milliseconds: math.min(skip, end)));
-    // Restoring the video speed to selected speed
-    // A delay of 1 second is added to ensure a smooth transition of speed after forwarding the video as forwaring is an asynchronous function
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      controller.setPlaybackSpeed(selectedSpeed);
-    });
-  }
+  // Future<void> _skipForward() async {
+  //   _cancelAndRestartTimer();
+  //   final end = _latestValue.duration.inMilliseconds;
+  //   final skip =
+  //       (_latestValue.position + const Duration(seconds: 15)).inMilliseconds;
+  //   await controller.seekTo(Duration(milliseconds: math.min(skip, end)));
+  //   // Restoring the video speed to selected speed
+  //   // A delay of 1 second is added to ensure a smooth transition of speed after forwarding the video as forwaring is an asynchronous function
+  //   Future.delayed(const Duration(milliseconds: 1000), () {
+  //     controller.setPlaybackSpeed(selectedSpeed);
+  //   });
+  // }
 
   void _startHideTimer() {
     final hideControlsTimer =

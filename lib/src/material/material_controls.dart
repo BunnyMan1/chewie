@@ -68,19 +68,11 @@ class _MaterialControlsState extends State<MaterialControls>
 
   bool _shouldShowCloseButton() {
     if (widget.onClose == null) return false;
-
-    // Show close button ONLY if:
-    // 1. Video is skippable (always), OR
-    // 2. First play is completed (not just started)
     return widget.isVideoSkippable || !chewieController.isFirstPlay;
   }
 
   bool _shouldShowFullscreenButton() {
     if (!chewieController.allowFullScreen) return false;
-
-    // Show fullscreen button ONLY if:
-    // 1. Video is NOT force fullscreen (always), OR
-    // 2. First play is completed (not just started)
     return !widget.isForceFullscreen || !chewieController.isFirstPlay;
   }
 
@@ -114,7 +106,7 @@ class _MaterialControlsState extends State<MaterialControls>
               else
                 _buildHitArea(),
 
-              if (_shouldShowCloseButton()) _buildTopRightCloseButton(),
+              if (_shouldShowCloseButton()) _buildCloseButton(),
               _buildTopLeftActionBar(),
 
               Column(
@@ -192,7 +184,7 @@ class _MaterialControlsState extends State<MaterialControls>
     });
   }
 
-  Widget _buildTopRightCloseButton() {
+  Widget _buildCloseButton() {
     if (widget.onClose == null) return const SizedBox.shrink();
 
     return Positioned(
@@ -371,7 +363,7 @@ class _MaterialControlsState extends State<MaterialControls>
                 ),
               ),
               SizedBox(height: chewieController.isFullScreen ? 15.0 : 0),
-              if (!chewieController.isLive)
+              if (!chewieController.isLive && !chewieController.isFirstPlay)
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -706,21 +698,21 @@ class _MaterialControlsState extends State<MaterialControls>
       child: MaterialVideoProgressBar(
         controller,
         // Disable seeking by commenting out drag callbacks
-        // onDragStart: () {
-        //   setState(() {
-        //     _dragging = true;
-        //   });
-        //   _hideTimer?.cancel();
-        // },
-        // onDragUpdate: () {
-        //   _hideTimer?.cancel();
-        // },
-        // onDragEnd: () {
-        //   setState(() {
-        //     _dragging = false;
-        //   });
-        //   _startHideTimer();
-        // },
+        onDragStart: () {
+          setState(() {
+            dragging = true;
+          });
+          _hideTimer?.cancel();
+        },
+        onDragUpdate: () {
+          _hideTimer?.cancel();
+        },
+        onDragEnd: () {
+          setState(() {
+            dragging = false;
+          });
+          _startHideTimer();
+        },
         colors: ChewieProgressColors(
           playedColor: customBlue,
           handleColor: customBlue,
