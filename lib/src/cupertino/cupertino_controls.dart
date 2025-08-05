@@ -357,75 +357,43 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    final isFullScreen = chewieController.isFullScreen;
-
     return Container(
-      margin: EdgeInsets.only(
-        top: isFullScreen ? 0.0 : 0.0,
-        left: 8.0,
-        right: 8.0,
-      ),
-      child:
-          isFullScreen
-              ? MediaQuery.removePadding(
-                context: context,
-                removeTop: true, 
-                child: _buildTopBarContent(
+      margin: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+      child: AnimatedOpacity(
+        opacity: notifier.hideStuff ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: SizedBox(
+          height: barHeight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              if (widget.onClose != null && !chewieController.isFirstPlay)
+                _buildCloseButton(
+                  controller,
                   backgroundColor,
                   iconColor,
                   barHeight,
                   buttonPadding,
-                ),
-              )
-              : _buildTopBarContent(
-                backgroundColor,
-                iconColor,
-                barHeight,
-                buttonPadding,
+                )
+              else
+                SizedBox(width: barHeight),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (chewieController.allowFullScreen &&
+                      (!chewieController.fullScreenByDefault ||
+                          (chewieController.fullScreenByDefault &&
+                              !chewieController.isFirstPlay)))
+                    _buildExpandButton(
+                      backgroundColor,
+                      iconColor,
+                      barHeight,
+                      buttonPadding,
+                    ),
+                ],
               ),
-    );
-  }
-
-  Widget _buildTopBarContent(
-    Color backgroundColor,
-    Color iconColor,
-    double barHeight,
-    double buttonPadding,
-  ) {
-    return AnimatedOpacity(
-      opacity: notifier.hideStuff ? 0.0 : 1.0,
-      duration: const Duration(milliseconds: 300),
-      child: SizedBox(
-        height: barHeight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            if (widget.onClose != null && !chewieController.isFirstPlay)
-              _buildCloseButton(
-                controller,
-                backgroundColor,
-                iconColor,
-                barHeight,
-                buttonPadding,
-              )
-            else
-              SizedBox(width: barHeight),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (chewieController.allowFullScreen &&
-                    (!chewieController.fullScreenByDefault ||
-                        (chewieController.fullScreenByDefault &&
-                            !chewieController.isFirstPlay)))
-                  _buildExpandButton(
-                    backgroundColor,
-                    iconColor,
-                    barHeight,
-                    buttonPadding,
-                  ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
