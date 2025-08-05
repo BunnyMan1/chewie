@@ -82,26 +82,23 @@ class _MaterialControlsState extends State<MaterialControls>
 
               Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, right: 8),
-                    child: Row(
-                      children: [
-                        Spacer(),
-                        if (widget.onClose != null &&
-                            !chewieController.isFirstPlay)
-                          _buildIconbutton(
-                            onTap: closePlayer,
-                            showWhenFinshedPlayingVideo: true,
-                            icon: Icons.close,
-                            padding: const EdgeInsets.all(4),
-                            constraints: BoxConstraints(
-                              maxHeight: 18,
-                              maxWidth: 18,
-                            ),
-                            iconSize: 20,
+                  Row(
+                    children: [
+                      Spacer(),
+                      if (widget.onClose != null &&
+                          !chewieController.isFirstPlay)
+                        _buildIconbutton(
+                          onTap: closePlayer,
+                          showWhenFinshedPlayingVideo: true,
+                          icon: Icons.close,
+                          padding: const EdgeInsets.all(4),
+                          constraints: BoxConstraints(
+                            maxHeight: 24,
+                            maxWidth: 24,
                           ),
-                      ],
-                    ),
+                          iconSize: 28,
+                        ),
+                    ],
                   ),
                   const Spacer(),
                   Column(
@@ -213,11 +210,13 @@ class _MaterialControlsState extends State<MaterialControls>
     final bool shouldShowTimerAndBar =
         !chewieController.isLive && !chewieController.isFirstPlay;
 
+    final isFinished = _latestValue.position >= _latestValue.duration;
     final showFullscreen =
         chewieController.allowFullScreen &&
         (!chewieController.fullScreenByDefault ||
             (chewieController.fullScreenByDefault &&
-                !chewieController.isFirstPlay));
+                !chewieController.isFirstPlay)) &&
+        !isFinished;
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
