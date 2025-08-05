@@ -125,12 +125,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  _buildTopBar(
-                    backgroundColor,
-                    iconColor,
-                    barHeight,
-                    buttonPadding,
-                  ),
                   const Spacer(),
                   if (_subtitleOn)
                     Transform.translate(
@@ -142,6 +136,12 @@ class _CupertinoControlsState extends State<CupertinoControls>
                     ),
                   _buildBottomBar(backgroundColor, iconColor, barHeight),
                 ],
+              ),
+              _buildTopBar(
+                backgroundColor,
+                iconColor,
+                barHeight,
+                buttonPadding,
               ),
             ],
           ),
@@ -207,17 +207,18 @@ class _CupertinoControlsState extends State<CupertinoControls>
     if (widget.onClose == null) return const SizedBox.shrink();
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10.0),
+      borderRadius: BorderRadius.circular(8.0),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 10.0),
         child: Container(
-          color: backgroundColor,
+          color: backgroundColor.withOpacity(0.8),
           child: Container(
-            height: barHeight,
-            padding: EdgeInsets.symmetric(horizontal: buttonPadding),
+            height:
+                barHeight * 0.8,
+            padding: EdgeInsets.symmetric(horizontal: buttonPadding * 0.7),
             child: GestureDetector(
               onTap: widget.onClose,
-              child: Icon(Icons.close, color: iconColor, size: 16),
+              child: Icon(Icons.close, color: iconColor, size: 18),
             ),
           ),
         ),
@@ -232,14 +233,15 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10.0),
+      borderRadius: BorderRadius.circular(8.0),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 10.0),
         child: Container(
-          color: backgroundColor,
+          color: backgroundColor.withOpacity(0.8),
           child: Container(
-            height: barHeight,
-            padding: EdgeInsets.symmetric(horizontal: buttonPadding),
+            height:
+                barHeight * 0.8,
+            padding: EdgeInsets.symmetric(horizontal: buttonPadding * 0.7),
             child: GestureDetector(
               onTap: () {
                 _onExpandCollapse();
@@ -247,7 +249,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
               child: Icon(
                 _isCustomFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
                 color: iconColor,
-                size: 16,
+                size: 18,
               ),
             ),
           ),
@@ -342,69 +344,60 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final bool shouldShowTimerAndBar =
         !chewieController.isLive && !chewieController.isFirstPlay;
 
-    return shouldShowTimerAndBar || isFinished
-        ? SafeArea(
-          bottom: chewieController.isFullScreen,
-          minimum: chewieController.controlsSafeAreaMinimum,
-          child: AnimatedOpacity(
-            opacity: notifier.hideStuff ? 0.0 : 1.0,
-            duration: const Duration(milliseconds: 300),
-            child: Container(
-              color: Colors.transparent,
-              alignment: Alignment.bottomCenter,
-              margin: EdgeInsets.all(marginSize),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: BackdropFilter(
-                  filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                  child: Container(
-                    height: barHeight,
-                    color: backgroundColor,
-                    child:
-                        chewieController.isLive
-                            ? Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                if (!chewieController.isFirstPlay || isFinished)
-                                  _buildPlayPause(
-                                    controller,
-                                    iconColor,
-                                    barHeight,
-                                  ),
-                                _buildLive(iconColor),
-                              ],
-                            )
-                            : Row(
-                              children: <Widget>[
-                                _buildPlayPause(
-                                  controller,
-                                  iconColor,
-                                  barHeight,
-                                ),
-                                _buildPosition(iconColor),
-                                _buildProgressBar(),
-                                _buildRemaining(iconColor),
-                                if (chewieController.allowPlaybackSpeedChanging)
-                                  _buildSpeedButton(
-                                    controller,
-                                    iconColor,
-                                    barHeight,
-                                  ),
-                                if (chewieController.additionalOptions !=
-                                        null &&
-                                    chewieController
-                                        .additionalOptions!(context)
-                                        .isNotEmpty)
-                                  _buildOptionsButton(iconColor, barHeight),
-                              ],
-                            ),
-                  ),
-                ),
+    return SafeArea(
+      bottom: chewieController.isFullScreen,
+      minimum: chewieController.controlsSafeAreaMinimum,
+      child: AnimatedOpacity(
+        opacity: notifier.hideStuff ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: Container(
+          color: Colors.transparent,
+          alignment: Alignment.bottomCenter,
+          margin: EdgeInsets.all(marginSize),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                height: barHeight,
+                color: backgroundColor,
+                child:
+                    chewieController.isLive
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            if (!chewieController.isFirstPlay || isFinished)
+                              _buildPlayPause(controller, iconColor, barHeight),
+                            _buildLive(iconColor),
+                          ],
+                        )
+                        : shouldShowTimerAndBar || isFinished
+                        ? Row(
+                          children: <Widget>[
+                            _buildPlayPause(controller, iconColor, barHeight),
+                            _buildPosition(iconColor),
+                            _buildProgressBar(),
+                            _buildRemaining(iconColor),
+                            if (chewieController.allowPlaybackSpeedChanging)
+                              _buildSpeedButton(
+                                controller,
+                                iconColor,
+                                barHeight,
+                              ),
+                            if (chewieController.additionalOptions != null &&
+                                chewieController
+                                    .additionalOptions!(context)
+                                    .isNotEmpty)
+                              _buildOptionsButton(iconColor, barHeight),
+                          ],
+                        )
+                        : Container(),
               ),
             ),
           ),
-        )
-        : Container();
+        ),
+      ),
+    );
   }
 
   Widget _buildLive(Color iconColor) {
@@ -477,21 +470,18 @@ class _CupertinoControlsState extends State<CupertinoControls>
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(8.0),
           child: BackdropFilter(
             filter: ui.ImageFilter.blur(sigmaX: 10.0),
             child: ColoredBox(
-              color: backgroundColor,
+              color: backgroundColor.withOpacity(0.8),
               child: Container(
-                height: barHeight,
-                padding: EdgeInsets.only(
-                  left: buttonPadding,
-                  right: buttonPadding,
-                ),
+                height: barHeight * 0.8, 
+                padding: EdgeInsets.symmetric(horizontal: buttonPadding * 0.7),
                 child: Icon(
                   _latestValue.volume > 0 ? Icons.volume_up : Icons.volume_off,
                   color: iconColor,
-                  size: 16,
+                  size: 18,
                 ),
               ),
             ),
@@ -650,13 +640,20 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    return SafeArea(
+    return Positioned(
+      top: MediaQuery.of(context).padding.top,
+      left: 0,
+      right: 0,
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
         child: Container(
           height: barHeight,
-          margin: EdgeInsets.all(marginSize),
+          margin: EdgeInsets.only(
+            left: marginSize,
+            right: marginSize,
+            top: 4.0,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
