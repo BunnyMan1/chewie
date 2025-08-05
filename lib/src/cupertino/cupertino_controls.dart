@@ -100,17 +100,20 @@ class _CupertinoControlsState extends State<CupertinoControls>
               else
                 _buildHitArea(),
 
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _buildTopBar(
-                  backgroundColor,
-                  iconColor,
-                  barHeight,
-                  buttonPadding,
+              SafeArea(
+                child: Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildTopBar(
+                    backgroundColor,
+                    iconColor,
+                    barHeight,
+                    buttonPadding,
+                  ),
                 ),
               ),
+
               if (!chewieController.isFirstPlay)
                 Positioned(
                   bottom: 0,
@@ -358,6 +361,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     return Container(
+      // Consistent 8px margin regardless of fullscreen mode
       margin: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
       child: AnimatedOpacity(
         opacity: notifier.hideStuff ? 0.0 : 1.0,
