@@ -328,6 +328,8 @@ class _MaterialControlsState extends State<MaterialControls>
 
   AnimatedOpacity _buildBottomBar(BuildContext context) {
     final iconColor = Theme.of(context).textTheme.labelLarge!.color;
+    final bool shouldShowTimerAndBar =
+        !chewieController.isLive && !chewieController.isFirstPlay;
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -353,8 +355,10 @@ class _MaterialControlsState extends State<MaterialControls>
                   children: <Widget>[
                     if (chewieController.isLive)
                       const Expanded(child: Text('LIVE'))
+                    else if (shouldShowTimerAndBar)
+                      _buildPosition(iconColor)
                     else
-                      _buildPosition(iconColor),
+                      const SizedBox.shrink(),
                     if (chewieController.allowMuting)
                       _buildMuteButton(controller),
                     const Spacer(),
@@ -363,7 +367,7 @@ class _MaterialControlsState extends State<MaterialControls>
                 ),
               ),
               SizedBox(height: chewieController.isFullScreen ? 15.0 : 0),
-              if (!chewieController.isLive && !chewieController.isFirstPlay)
+              if (!chewieController.isLive && shouldShowTimerAndBar)
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -697,7 +701,6 @@ class _MaterialControlsState extends State<MaterialControls>
     return Expanded(
       child: MaterialVideoProgressBar(
         controller,
-        // Disable seeking by commenting out drag callbacks
         onDragStart: () {
           setState(() {
             dragging = true;
