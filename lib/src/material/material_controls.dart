@@ -226,7 +226,6 @@ class _MaterialControlsState extends State<MaterialControls>
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          bottom: !chewieController.isFullScreen ? 10.0 : 0,
         ),
         child: SafeArea(
           top: false,
@@ -252,7 +251,6 @@ class _MaterialControlsState extends State<MaterialControls>
                   ],
                 ),
               ),
-              SizedBox(height: chewieController.isFullScreen ? 15.0 : 0),
               if (!chewieController.isLive && !chewieController.isFirstPlay)
                 Expanded(
                   child: Container(
