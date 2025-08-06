@@ -26,6 +26,8 @@ class _MaterialControlsState extends State<MaterialControls>
   late VideoPlayerValue _latestValue;
   Timer? _hideTimer;
   Timer? _initTimer;
+  late var _subtitlesPosition = const Duration();
+  bool _subtitleOn = false;
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
   bool _displayTapped = false;
@@ -70,11 +72,15 @@ class _MaterialControlsState extends State<MaterialControls>
           absorbing: notifier.hideStuff,
           child: Stack(
             children: [
-              if (_displayBufferingIndicator)
-                _chewieController?.bufferingBuilder?.call(context) ??
-                    const Center(
-                      child: CircularProgressIndicator(
+              if (_displayBufferingIndicator || _latestValue.isBuffering)
+                Center(
+                  child: _buildIconbutton(
+                    onTap: () {},
+                    icon: null,
+                    alwayShow: true,
+                    iconWidget: const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation(customBlue),
+                    ),
                   ),
                 )
               else
@@ -85,7 +91,14 @@ class _MaterialControlsState extends State<MaterialControls>
                   const Spacer(),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[_buildBottomBar(context)],
+                    children: <Widget>[
+                      // if (_subtitleOn)
+                      //   Transform.translate(
+                      //     offset: Offset(0.0, notifier.hideStuff ? barHeight * 0.8 : 0.0),
+                      //     child: _buildSubtitles(context, chewieController.subtitle!),
+                      //   ),
+                      _buildBottomBar(context),
+                    ],
                   ),
                 ],
               ),
@@ -303,6 +316,39 @@ class _MaterialControlsState extends State<MaterialControls>
     );
   }
 
+  Widget _buildSubtitles(BuildContext context, Subtitles subtitles) {
+    if (!_subtitleOn) {
+      return Container();
+    }
+    final currentSubtitle = subtitles.getByPosition(_subtitlesPosition);
+    if (currentSubtitle.isEmpty) {
+      return Container();
+    }
+
+    if (chewieController.subtitleBuilder != null) {
+      return chewieController.subtitleBuilder!(
+        context,
+        currentSubtitle.first!.text,
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.all(marginSize),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: const Color(0x96000000),
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Text(
+          currentSubtitle.first!.text as String,
+          style: const TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
   void closePlayer() {
     widget.onClose!();
   }
@@ -318,7 +364,9 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Future<void> _initialize() async {
+    _subtitleOn = chewieController.subtitle?.isNotEmpty ?? false;
     controller.addListener(_updateState);
+
     _updateState();
 
     if (controller.value.isPlaying || chewieController.autoPlay) {
@@ -360,11 +408,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _startHideTimer() {
-    final hideControlsTimer =
-        chewieController.hideControlsTimer.isNegative
-            ? ChewieController.defaultHideControlsTimer
-            : chewieController.hideControlsTimer;
-    _hideTimer = Timer(hideControlsTimer, () {
+    _hideTimer = Timer(const Duration(seconds: 3), () {
       setState(() {
         notifier.hideStuff = true;
       });
@@ -401,7 +445,8 @@ class _MaterialControlsState extends State<MaterialControls>
 
     setState(() {
       _latestValue = controller.value;
-      
+      _subtitlesPosition = controller.value.position;
+
       final isFinished = _latestValue.position >= _latestValue.duration;
 
       if (isFinished) {
@@ -439,7 +484,8 @@ class _MaterialControlsState extends State<MaterialControls>
 
             _startHideTimer();
           },
-          colors: chewieController.materialProgressColors ??
+          colors:
+              chewieController.materialProgressColors ??
               ChewieProgressColors(
                 playedColor: customBlue,
                 handleColor: customBlue,
