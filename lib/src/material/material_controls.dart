@@ -79,7 +79,7 @@ class _MaterialControlsState extends State<MaterialControls>
                   icon: null,
                   alwayShow: true,
                   iconWidget: const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(Color(0xFF0B6FE4)),
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
                   ),
                 ),
               )
