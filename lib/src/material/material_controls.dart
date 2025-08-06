@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:in_app_picture_in_picture/src/helpers/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../../src/center_play_button.dart';
@@ -32,6 +33,8 @@ class _MaterialControlsState extends State<MaterialControls>
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
   bool _displayTapped = false;
+  Timer? _bufferingDisplayTimer;
+  bool _displayBufferingIndicator = false;
 
   final barHeight = 48.0 * 1.5;
   final marginSize = 5.0;
@@ -44,6 +47,13 @@ class _MaterialControlsState extends State<MaterialControls>
   void initState() {
     super.initState();
     notifier = Provider.of<PlayerNotifier>(context, listen: false);
+  }
+
+  void _bufferingTimerTimeout() {
+    _displayBufferingIndicator = true;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -62,14 +72,14 @@ class _MaterialControlsState extends State<MaterialControls>
         absorbing: notifier.hideStuff,
         child: Stack(
           children: [
-            if (_latestValue.isBuffering)
+            if (_displayBufferingIndicator)
               Center(
                 child: _buildIconbutton(
                   onTap: () {},
                   icon: null,
                   alwayShow: true,
                   iconWidget: const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                    valueColor: AlwaysStoppedAnimation(Color(0xFF0B6FE4)),
                   ),
                 ),
               )
@@ -115,6 +125,7 @@ class _MaterialControlsState extends State<MaterialControls>
     _hideTimer?.cancel();
     _initTimer?.cancel();
     _showAfterExpandCollapseTimer?.cancel();
+    _bufferingDisplayTimer?.cancel();
   }
 
   @override
@@ -409,6 +420,25 @@ class _MaterialControlsState extends State<MaterialControls>
 
   void _updateState() {
     if (!mounted) return;
+
+    final bool buffering = getIsBuffering(controller);
+
+    // Handle buffering display with delay if configured
+    if (chewieController.progressIndicatorDelay != null) {
+      if (buffering) {
+        _bufferingDisplayTimer ??= Timer(
+          chewieController.progressIndicatorDelay!,
+          _bufferingTimerTimeout,
+        );
+      } else {
+        _bufferingDisplayTimer?.cancel();
+        _bufferingDisplayTimer = null;
+        _displayBufferingIndicator = false;
+      }
+    } else {
+      _displayBufferingIndicator = buffering;
+    }
+
     setState(() {
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
