@@ -500,10 +500,14 @@ class ChewieController extends ChangeNotifier {
   }
 
   bool _isFullScreen = false;
+  int _noOfTimesPlayed = 0;
 
   bool get isFullScreen => _isFullScreen;
 
   bool get isPlaying => videoPlayerController.value.isPlaying;
+
+  bool get isFinished =>
+      videoPlayerController.value.position >= videoPlayerController.value.duration;
 
   Future<dynamic> _initialize() async {
     await videoPlayerController.setLooping(looping);
@@ -528,12 +532,31 @@ class ChewieController extends ChangeNotifier {
     if (fullScreenByDefault) {
       videoPlayerController.addListener(_fullScreenListener);
     }
+    
+    if (onInitialPlayCompletedCallBack != null) {
+      videoPlayerController.addListener(_onInitialPlayCompleted);
+    }
+
+    videoPlayerController.addListener(_playBackIncrement);
   }
 
   Future<void> _fullScreenListener() async {
     if (videoPlayerController.value.isPlaying && !_isFullScreen) {
       enterFullScreen();
       videoPlayerController.removeListener(_fullScreenListener);
+    }
+  }
+
+  void _playBackIncrement() {
+    if (isFinished) {
+      _noOfTimesPlayed++;
+    }
+  }
+
+  Future<void> _onInitialPlayCompleted() async {
+    if (onInitialPlayCompletedCallBack != null && _noOfTimesPlayed <= 1 && isFinished) {
+      onInitialPlayCompletedCallBack!();
+      videoPlayerController.removeListener(_onInitialPlayCompleted);
     }
   }
 
