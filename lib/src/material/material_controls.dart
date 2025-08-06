@@ -74,9 +74,9 @@ class _MaterialControlsState extends State<MaterialControls>
                 _chewieController?.bufferingBuilder?.call(context) ??
                     const Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(customBlue),
-                      ),
-                    )
+                      valueColor: AlwaysStoppedAnimation(customBlue),
+                  ),
+                )
               else
                 _buildHitArea(),
               Column(
@@ -265,11 +265,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildHitArea() {
-    final bool isFinished =
-        (_latestValue.position >= _latestValue.duration) &&
-        _latestValue.duration.inSeconds > 0;
-    final bool showPlayButton =
-        widget.showPlayButton && !_dragging && !notifier.hideStuff;
+    final bool isFinished = _latestValue.position >= _latestValue.duration;
 
     return Padding(
       padding: const EdgeInsets.only(top: 12.0, bottom: 60),
@@ -280,24 +276,14 @@ class _MaterialControlsState extends State<MaterialControls>
               child: GestureDetector(
                 onTap: () {
                   if (_latestValue.isPlaying) {
-                    if (_chewieController?.pauseOnBackgroundTap ?? false) {
-                      _playPause();
-                      _cancelAndRestartTimer();
+                    if (_displayTapped) {
+                      notifier.hideStuff = true;
                     } else {
-                      if (_displayTapped) {
-                        setState(() {
-                          notifier.hideStuff = true;
-                        });
-                      } else {
-                        _cancelAndRestartTimer();
-                      }
+                      _cancelAndRestartTimer();
                     }
                   } else {
                     _playPause();
-
-                    setState(() {
-                      notifier.hideStuff = true;
-                    });
+                    notifier.hideStuff = true;
                   }
                 },
                 child: CenterPlayButton(
@@ -305,7 +291,7 @@ class _MaterialControlsState extends State<MaterialControls>
                   iconColor: Colors.white,
                   isFinished: isFinished,
                   isPlaying: controller.value.isPlaying,
-                  show: showPlayButton,
+                  show: !_dragging && !notifier.hideStuff,
                   onPressed: _playPause,
                 ),
               ),
@@ -349,9 +335,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _playPause() {
-    final bool isFinished =
-        (_latestValue.position >= _latestValue.duration) &&
-        _latestValue.duration.inSeconds > 0;
+    final isFinished = _latestValue.position >= _latestValue.duration;
 
     setState(() {
       if (controller.value.isPlaying) {
@@ -367,7 +351,7 @@ class _MaterialControlsState extends State<MaterialControls>
           });
         } else {
           if (isFinished) {
-            controller.seekTo(Duration.zero);
+            controller.seekTo(const Duration());
           }
           controller.play();
         }
@@ -417,7 +401,7 @@ class _MaterialControlsState extends State<MaterialControls>
 
     setState(() {
       _latestValue = controller.value;
-
+      
       final isFinished = _latestValue.position >= _latestValue.duration;
 
       if (isFinished) {
@@ -455,12 +439,13 @@ class _MaterialControlsState extends State<MaterialControls>
 
             _startHideTimer();
           },
-          colors: ChewieProgressColors(
-            playedColor: customBlue,
-            handleColor: customBlue,
-            bufferedColor: customBlue.withValues(alpha: 0.3),
-            backgroundColor: Colors.white.withValues(alpha: 0.3),
-          ),
+          colors: chewieController.materialProgressColors ??
+              ChewieProgressColors(
+                playedColor: customBlue,
+                handleColor: customBlue,
+                bufferedColor: customBlue.withValues(alpha: 0.3),
+                backgroundColor: Colors.white.withValues(alpha: 0.3),
+              ),
         ),
       );
     }
