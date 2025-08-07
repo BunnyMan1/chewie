@@ -72,7 +72,7 @@ class _MaterialControlsState extends State<MaterialControls>
         absorbing: notifier.hideStuff,
         child: Stack(
           children: [
-            if (_displayBufferingIndicator)
+            if (_displayBufferingIndicator || _latestValue.isBuffering)
               Center(
                 child: _buildIconbutton(
                   onTap: () {},
