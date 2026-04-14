@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 import '../src/chewie_progress_colors.dart';
@@ -7,16 +6,16 @@ import '../src/chewie_progress_colors.dart';
 class VideoProgressBar extends StatefulWidget {
   VideoProgressBar(
     this.controller, {
+    super.key,
     ChewieProgressColors? colors,
     this.onDragEnd,
     this.onDragStart,
     this.onDragUpdate,
-    Key? key,
+    this.draggableProgressBar = true,
     required this.barHeight,
     required this.handleHeight,
     required this.drawShadow,
-  })  : colors = colors ?? ChewieProgressColors(),
-        super(key: key);
+  }) : colors = colors ?? ChewieProgressColors();
 
   final VideoPlayerController controller;
   final ChewieProgressColors colors;
@@ -27,8 +26,10 @@ class VideoProgressBar extends StatefulWidget {
   final double barHeight;
   final double handleHeight;
   final bool drawShadow;
+  final bool draggableProgressBar;
 
   @override
+  // ignore: library_private_types_in_public_api
   _VideoProgressBarState createState() {
     return _VideoProgressBarState();
   }
@@ -41,6 +42,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
   }
 
   bool _controllerWasPlaying = false;
+
+  Offset? _latestDraggableOffset;
 
   VideoPlayerController get controller => widget.controller;
 
@@ -57,62 +60,107 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
   }
 
   void _seekToRelativePosition(Offset globalPosition) {
-    final box = context.findRenderObject()! as RenderBox;
-    final Offset tapPos = box.globalToLocal(globalPosition);
-    final double relative = tapPos.dx / box.size.width;
-    final Duration position = controller.value.duration * relative;
-    controller.seekTo(position);
+    controller.seekTo(
+      context.calcRelativePosition(controller.value.duration, globalPosition),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragStart: (DragStartDetails details) {
-        if (!controller.value.isInitialized) {
-          return;
-        }
-        _controllerWasPlaying = controller.value.isPlaying;
-        if (_controllerWasPlaying) {
-          controller.pause();
-        }
+    final child = Center(
+      child: StaticProgressBar(
+        value: controller.value,
+        colors: widget.colors,
+        barHeight: widget.barHeight,
+        handleHeight: widget.handleHeight,
+        drawShadow: widget.drawShadow,
+        latestDraggableOffset: _latestDraggableOffset,
+      ),
+    );
 
-        widget.onDragStart?.call();
-      },
-      onHorizontalDragUpdate: (DragUpdateDetails details) {
-        if (!controller.value.isInitialized) {
-          return;
-        }
-        _seekToRelativePosition(details.globalPosition);
+    return widget.draggableProgressBar
+        ? GestureDetector(
+            onHorizontalDragStart: (DragStartDetails details) {
+              if (!controller.value.isInitialized) {
+                return;
+              }
+              _controllerWasPlaying = controller.value.isPlaying;
+              if (_controllerWasPlaying) {
+                controller.pause();
+              }
 
-        widget.onDragUpdate?.call();
-      },
-      onHorizontalDragEnd: (DragEndDetails details) {
-        if (_controllerWasPlaying) {
-          controller.play();
-        }
+              widget.onDragStart?.call();
+            },
+            onHorizontalDragUpdate: (DragUpdateDetails details) {
+              if (!controller.value.isInitialized) {
+                return;
+              }
+              _latestDraggableOffset = details.globalPosition;
+              listener();
 
-        widget.onDragEnd?.call();
-      },
-      onTapDown: (TapDownDetails details) {
-        if (!controller.value.isInitialized) {
-          return;
-        }
-        _seekToRelativePosition(details.globalPosition);
-      },
-      child: Center(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          color: Colors.transparent,
-          child: CustomPaint(
-            painter: _ProgressBarPainter(
-              value: controller.value,
-              colors: widget.colors,
-              barHeight: widget.barHeight,
-              handleHeight: widget.handleHeight,
-              drawShadow: widget.drawShadow,
-            ),
-          ),
+              widget.onDragUpdate?.call();
+            },
+            onHorizontalDragEnd: (DragEndDetails details) {
+              if (_controllerWasPlaying) {
+                controller.play();
+              }
+
+              if (_latestDraggableOffset != null) {
+                _seekToRelativePosition(_latestDraggableOffset!);
+                _latestDraggableOffset = null;
+              }
+
+              widget.onDragEnd?.call();
+            },
+            onTapDown: (TapDownDetails details) {
+              if (!controller.value.isInitialized) {
+                return;
+              }
+              _seekToRelativePosition(details.globalPosition);
+            },
+            child: child,
+          )
+        : child;
+  }
+}
+
+class StaticProgressBar extends StatelessWidget {
+  const StaticProgressBar({
+    required this.value,
+    required this.colors,
+    required this.barHeight,
+    required this.handleHeight,
+    required this.drawShadow,
+    this.latestDraggableOffset,
+  });
+
+  final Offset? latestDraggableOffset;
+  final VideoPlayerValue value;
+  final ChewieProgressColors colors;
+
+  final double barHeight;
+  final double handleHeight;
+  final bool drawShadow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      color: Colors.transparent,
+      child: CustomPaint(
+        painter: _ProgressBarPainter(
+          value: value,
+          draggableValue: latestDraggableOffset != null
+              ? context.calcRelativePosition(
+                  value.duration,
+                  latestDraggableOffset!,
+                )
+              : null,
+          colors: colors,
+          barHeight: barHeight,
+          handleHeight: handleHeight,
+          drawShadow: drawShadow,
         ),
       ),
     );
@@ -126,6 +174,7 @@ class _ProgressBarPainter extends CustomPainter {
     required this.barHeight,
     required this.handleHeight,
     required this.drawShadow,
+    required this.draggableValue,
   });
 
   VideoPlayerValue value;
@@ -134,6 +183,10 @@ class _ProgressBarPainter extends CustomPainter {
   final double barHeight;
   final double handleHeight;
   final bool drawShadow;
+
+  /// The value of the draggable progress bar.
+  /// If null, the progress bar is not being dragged.
+  final Duration? draggableValue;
 
   @override
   bool shouldRepaint(CustomPainter painter) {
@@ -158,9 +211,13 @@ class _ProgressBarPainter extends CustomPainter {
       return;
     }
     final double playedPartPercent =
-        value.position.inMilliseconds / value.duration.inMilliseconds;
-    final double playedPart =
-        playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
+        (draggableValue != null
+            ? draggableValue!.inMilliseconds
+            : value.position.inMilliseconds) /
+        value.duration.inMilliseconds;
+    final double playedPart = playedPartPercent > 1
+        ? size.width
+        : playedPartPercent * size.width;
     for (final DurationRange range in value.buffered) {
       final double start = range.startFraction(value.duration) * size.width;
       final double end = range.endFraction(value.duration) * size.width;
@@ -187,7 +244,7 @@ class _ProgressBarPainter extends CustomPainter {
     );
 
     if (drawShadow) {
-      final shadowPath = Path()
+      final Path shadowPath = Path()
         ..addOval(
           Rect.fromCircle(
             center: Offset(playedPart, baseOffset + barHeight / 2),
@@ -203,5 +260,15 @@ class _ProgressBarPainter extends CustomPainter {
       handleHeight,
       colors.handlePaint,
     );
+  }
+}
+
+extension RelativePositionExtensions on BuildContext {
+  Duration calcRelativePosition(Duration videoDuration, Offset globalPosition) {
+    final box = findRenderObject()! as RenderBox;
+    final Offset tapPos = box.globalToLocal(globalPosition);
+    final double relative = (tapPos.dx / box.size.width).clamp(0, 1);
+    final Duration position = videoDuration * relative;
+    return position;
   }
 }
