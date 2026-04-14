@@ -126,6 +126,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
 
 class StaticProgressBar extends StatelessWidget {
   const StaticProgressBar({
+    super.key,
     required this.value,
     required this.colors,
     required this.barHeight,
