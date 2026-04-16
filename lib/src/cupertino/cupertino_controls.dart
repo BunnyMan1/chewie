@@ -253,29 +253,38 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
+    final opacity = notifier.hideStuff ? 0.0 : 1.0;
+
     return GestureDetector(
-      onTap: _onExpandCollapse,
+      onTap: opacity > 0.5 ? _onExpandCollapse : null,
       child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
+        opacity: opacity,
         duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: Container(
-              height: barHeight,
-              padding: EdgeInsets.only(
-                left: buttonPadding,
-                right: buttonPadding,
-              ),
-              color: backgroundColor,
-              child: Center(
-                child: Icon(
-                  chewieController.isFullScreen
-                      ? CupertinoIcons.arrow_down_right_arrow_up_left
-                      : CupertinoIcons.arrow_up_left_arrow_down_right,
-                  color: iconColor,
-                  size: 16,
+        child: AnimatedScale(
+          scale: opacity > 0.5 ? 1.0 : 0.9,
+          duration: const Duration(milliseconds: 300),
+          child: IgnorePointer(
+            ignoring: opacity < 0.5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10.0),
+                child: Container(
+                  height: barHeight,
+                  padding: EdgeInsets.only(
+                    left: buttonPadding,
+                    right: buttonPadding,
+                  ),
+                  color: backgroundColor,
+                  child: Center(
+                    child: Icon(
+                      chewieController.isFullScreen
+                          ? CupertinoIcons.arrow_down_right_arrow_up_left
+                          : CupertinoIcons.arrow_up_left_arrow_down_right,
+                      color: iconColor,
+                      size: 16,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -328,36 +337,46 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    return GestureDetector(
-      onTap: () {
-        _cancelAndRestartTimer();
+    final opacity = notifier.hideStuff ? 0.0 : 1.0;
 
-        if (_latestValue.volume == 0) {
-          controller.setVolume(_latestVolume ?? 0.5);
-        } else {
-          _latestVolume = controller.value.volume;
-          controller.setVolume(0.0);
-        }
-      },
+    return GestureDetector(
+      onTap: opacity > 0.5
+          ? () {
+              _cancelAndRestartTimer();
+              if (_latestValue.volume == 0) {
+                controller.setVolume(_latestVolume ?? 0.5);
+              } else {
+                _latestVolume = controller.value.volume;
+                controller.setVolume(0.0);
+              }
+            }
+          : null,
       child: AnimatedOpacity(
-        opacity: notifier.hideStuff ? 0.0 : 1.0,
+        opacity: opacity,
         duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: ColoredBox(
-              color: backgroundColor,
-              child: Container(
-                height: barHeight,
-                padding: EdgeInsets.only(
-                  left: buttonPadding,
-                  right: buttonPadding,
-                ),
-                child: Icon(
-                  _latestValue.volume > 0 ? Icons.volume_up : Icons.volume_off,
-                  color: iconColor,
-                  size: 16,
+        child: AnimatedScale(
+          scale: opacity > 0.5 ? 1.0 : 0.9,
+          duration: const Duration(milliseconds: 300),
+          child: IgnorePointer(
+            ignoring: opacity < 0.5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10.0),
+                child: ColoredBox(
+                  color: backgroundColor,
+                  child: Container(
+                    height: barHeight,
+                    padding: EdgeInsets.only(
+                      left: buttonPadding,
+                      right: buttonPadding,
+                    ),
+                    child: Icon(
+                      _latestValue.volume > 0 ? Icons.volume_up : Icons.volume_off,
+                      color: iconColor,
+                      size: 16,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -375,28 +394,33 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double buttonPadding,
   ) {
     final bool isFinished = _latestValue.position >= _latestValue.duration;
+    final opacity = isFinished ? 1.0 : (notifier.hideStuff ? 0.0 : 1.0);
+
     return GestureDetector(
-      onTap: widget.onClose,
+      onTap: opacity > 0.5 ? widget.onClose : null,
       child: AnimatedOpacity(
-        opacity: isFinished
-            ? 1.0
-            : notifier.hideStuff
-            ? 0.0
-            : 1.0,
+        opacity: opacity,
         duration: const Duration(milliseconds: 300),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10.0),
-            child: Container(
-              color: backgroundColor,
-              child: Container(
-                height: barHeight,
-                padding: EdgeInsets.only(
-                  left: buttonPadding,
-                  right: buttonPadding,
+        child: AnimatedScale(
+          scale: opacity > 0.5 ? 1.0 : 0.9,
+          duration: const Duration(milliseconds: 300),
+          child: IgnorePointer(
+            ignoring: opacity < 0.5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10.0),
+                child: Container(
+                  color: backgroundColor,
+                  child: Container(
+                    height: barHeight,
+                    padding: EdgeInsets.only(
+                      left: buttonPadding,
+                      right: buttonPadding,
+                    ),
+                    child: Icon(Icons.close, color: iconColor, size: 16),
+                  ),
                 ),
-                child: Icon(Icons.close, color: iconColor, size: 16),
               ),
             ),
           ),

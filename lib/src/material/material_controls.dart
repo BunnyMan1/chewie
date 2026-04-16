@@ -299,42 +299,51 @@ class _MaterialControlsState extends State<MaterialControls>
     final isFinished =
         _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
+    final opacity = alwayShow
+        ? 1.0
+        : showWhenFinshedPlayingVideo && isFinished
+        ? 1.0
+        : !_dragging && !notifier.hideStuff
+        ? 1.0
+        : 0.0;
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: opacity > 0.5 ? onTap : null,
       child: Container(
         color: Colors.transparent,
         child: Center(
           child: AnimatedOpacity(
-            opacity: alwayShow
-                ? 1
-                : showWhenFinshedPlayingVideo && isFinished
-                ? 1.0
-                : !_dragging && !notifier.hideStuff
-                ? 1.0
-                : 0.0,
+            opacity: opacity,
             duration: const Duration(milliseconds: 300),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.black54,
-                shape: BoxShape.circle,
-              ),
-              child: Padding(
-                padding: padding,
-                // Always set the iconSize on the IconButton, not on the Icon itself:
-                // https://github.com/flutter/flutter/issues/52980
-                child:
-                    iconWidget ??
-                    IconButton(
-                      constraints: constraints,
-                      iconSize: iconSize,
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        icon,
-                        // size: iconSize,
-                        color: Colors.white,
-                      ),
-                      onPressed: onTap,
-                    ),
+            child: AnimatedScale(
+              scale: opacity > 0.5 ? 1.0 : 0.85,
+              duration: const Duration(milliseconds: 300),
+              child: IgnorePointer(
+                ignoring: opacity < 0.5,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: padding,
+                    // Always set the iconSize on the IconButton, not on the Icon itself:
+                    // https://github.com/flutter/flutter/issues/52980
+                    child:
+                        iconWidget ??
+                        IconButton(
+                          constraints: constraints,
+                          iconSize: iconSize,
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            icon,
+                            // size: iconSize,
+                            color: Colors.white,
+                          ),
+                          onPressed: onTap,
+                        ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -349,38 +358,23 @@ class _MaterialControlsState extends State<MaterialControls>
         _latestValue.position >= _latestValue.duration;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 12.0, bottom: 60),
+      padding: const EdgeInsets.only(bottom: 60),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // if (isFinished && widget.onClose != null)
-          //   Expanded(
-          //     child: _buildIconbutton(
-          //       onTap: closePlayer,
-          //       icon: Icons.close,
-          //     ),
-          //   ),
-          // if (isFinished)
-          //   const SizedBox(
-          //     height: 8,
-          //   ),
           if (!chewieController.isFirstPlay || isFinished)
             Expanded(
               child: GestureDetector(
                 onTap: () {
                   if (_latestValue.isPlaying) {
                     if (_displayTapped) {
-                      // setState(() {
                       notifier.hideStuff = true;
-                      // });
                     } else {
                       _cancelAndRestartTimer();
                     }
                   } else {
                     _playPause();
-
-                    // setState(() {
                     notifier.hideStuff = true;
-                    // });
                   }
                 },
                 child: CenterPlayButton(
