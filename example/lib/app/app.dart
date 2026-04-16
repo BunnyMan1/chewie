@@ -1,4 +1,4 @@
-import 'package:chewie/in_app_picture_in_picture.dart';
+import 'package:in_app_picture_in_picture/in_app_picture_in_picture.dart';
 import 'package:chewie_example/app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';

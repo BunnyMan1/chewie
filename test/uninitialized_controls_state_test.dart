@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/material/material_controls.dart';
-import 'package:chewie/src/material/material_desktop_controls.dart';
-import 'package:chewie/src/center_play_button.dart';
-import 'package:chewie/src/cupertino/cupertino_controls.dart';
+import 'package:in_app_picture_in_picture/src/chewie_player.dart';
+import 'package:in_app_picture_in_picture/src/material/material_controls.dart';
+import 'package:in_app_picture_in_picture/src/material/material_desktop_controls.dart';
+import 'package:in_app_picture_in_picture/src/center_play_button.dart';
+import 'package:in_app_picture_in_picture/src/cupertino/cupertino_controls.dart';
 
 List<String> srcs = [
   "https://assets.mixkit.co/videos/preview/mixkit-spinning-around-the-earth-29351-large.mp4",

@@ -8,7 +8,7 @@ environment:
   flutter: ">=3.32.0"
 
 dependencies:
-  chewie:
+  in_app_picture_in_picture:
     path: ../
   flutter:
     sdk: flutter
