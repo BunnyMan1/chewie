@@ -74,20 +74,21 @@ class ChewieState extends State<Chewie> {
   }
 
   Future<void> listener() async {
+    final bool prevIsFullScreen = _isFullScreen;
     if (widget.controller.isFullScreen && !_isFullScreen) {
       _isFullScreen = true;
       _wasPlayingBeforeFullScreen =
           widget.controller.videoPlayerController.value.isPlaying;
       _resumeAppliedInFullScreen = false;
-      await _pushFullScreenWidget(context);
     } else if (_isFullScreen && !widget.controller.isFullScreen) {
-      Navigator.of(
-        context,
-        rootNavigator: widget.controller.useRootNavigator,
-      ).pop();
       _isFullScreen = false;
     }
-    widget.onToggleFullscreen(_isFullScreen);
+    
+    // Only notify the app when fullscreen state actually changed to avoid
+    // double-triggering (e.g. when enterFullScreen(notify:false) is used)
+    if (prevIsFullScreen != _isFullScreen) {
+      widget.onToggleFullscreen(_isFullScreen);
+    }
   }
 
   @override
@@ -175,7 +176,7 @@ class ChewieState extends State<Chewie> {
     );
   }
 
-  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
+  Future<dynamic> pushFullScreenWidget(BuildContext context) async {
     final TransitionRoute<void> route = PageRouteBuilder<void>(
       pageBuilder: _fullScreenRoutePageBuilder,
     );
@@ -328,6 +329,7 @@ class ChewieController extends ChangeNotifier {
     this.hideControlsTimer = defaultHideControlsTimer,
     this.controlsSafeAreaMinimum = EdgeInsets.zero,
     this.pauseOnBackgroundTap = false,
+    this.onExternalFullScreenToggle,
   }) : assert(
          playbackSpeeds.every((speed) => speed > 0),
          'The playbackSpeeds values must all be greater than 0',
@@ -452,6 +454,10 @@ class ChewieController extends ChangeNotifier {
   bool isFirstPlay;
   final VoidCallback? onCloseCallback;
   final VoidCallback? onInitialPlayCompletedCallBack;
+  /// Called by controls UI when the fullscreen button is tapped.
+  /// If provided, this bypasses chewie's internal route-based fullscreen
+  /// and lets the app handle the fullscreen transition (e.g. with animation).
+  final void Function(bool isFullScreen)? onExternalFullScreenToggle;
   final Future<void> Function(
     BuildContext context,
     List<OptionItem> chewieOptions,
