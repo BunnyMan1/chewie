@@ -322,7 +322,9 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    final bool isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final bool isFinished =
+        _latestValue.position >= _latestValue.duration &&
+        _latestValue.duration.inSeconds > 0;
     final opacity = isFinished ? 1.0 : (notifier.hideStuff ? 0.0 : 1.0);
 
     return GestureDetector(

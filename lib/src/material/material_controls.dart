@@ -127,7 +127,9 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildTopBar() {
-    final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final isFinished =
+        _latestValue.position >= _latestValue.duration &&
+        _latestValue.duration.inSeconds > 0;
     final showFullscreen =
         chewieController.allowFullScreen &&
         (!chewieController.fullScreenByDefault ||
@@ -211,7 +213,9 @@ class _MaterialControlsState extends State<MaterialControls>
     Widget? iconWidget,
     BoxConstraints? constraints,
   }) {
-    final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final isFinished =
+        _latestValue.position >= _latestValue.duration &&
+        _latestValue.duration.inSeconds > 0;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -257,7 +261,9 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildHitArea() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final bool isFinished =
+        _latestValue.position >= _latestValue.duration &&
+        _latestValue.duration.inSeconds > 0;
 
     return Padding(
       padding: const EdgeInsets.only(top: 12.0, bottom: 60),
@@ -328,7 +334,9 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _playPause() {
-    final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final isFinished =
+        _latestValue.position >= _latestValue.duration &&
+        _latestValue.duration.inSeconds > 0;
 
     setState(() {
       if (controller.value.isPlaying) {
@@ -364,7 +372,9 @@ class _MaterialControlsState extends State<MaterialControls>
     if (!mounted) return;
     setState(() {
       _latestValue = controller.value;
-      final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+      final isFinished =
+          _latestValue.position >= _latestValue.duration &&
+          _latestValue.duration.inSeconds > 0;
 
       if (isFinished) {
         if (chewieController.isFirstPlay) {
@@ -380,7 +390,9 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildProgressBar() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final bool isFinished =
+        _latestValue.position >= _latestValue.duration &&
+        _latestValue.duration.inSeconds > 0;
     if (isFinished) {
       return Container();
     } else {
