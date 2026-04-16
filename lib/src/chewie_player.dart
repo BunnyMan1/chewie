@@ -47,6 +47,7 @@ class ChewieState extends State<Chewie> {
 
   bool get isControllerFullScreen => widget.controller.isFullScreen;
   late PlayerNotifier notifier;
+  NavigatorState? _navigatorState;
 
   @override
   void initState() {
@@ -74,20 +75,15 @@ class ChewieState extends State<Chewie> {
   }
 
   Future<void> listener() async {
-    final bool prevIsFullScreen = _isFullScreen;
     if (widget.controller.isFullScreen && !_isFullScreen) {
       _isFullScreen = true;
       _wasPlayingBeforeFullScreen =
           widget.controller.videoPlayerController.value.isPlaying;
       _resumeAppliedInFullScreen = false;
+      pushFullScreenWidget(context);
     } else if (_isFullScreen && !widget.controller.isFullScreen) {
+      _navigatorState?.pop();
       _isFullScreen = false;
-    }
-
-    // Only notify the app when fullscreen state actually changed to avoid
-    // double-triggering (e.g. when enterFullScreen(notify:false) is used)
-    if (prevIsFullScreen != _isFullScreen) {
-      widget.onToggleFullscreen(_isFullScreen);
     }
   }
 
@@ -187,10 +183,11 @@ class ChewieState extends State<Chewie> {
       WakelockPlus.enable();
     }
 
-    await Navigator.of(
+    _navigatorState = Navigator.of(
       context,
       rootNavigator: widget.controller.useRootNavigator,
-    ).push(route);
+    );
+    await _navigatorState!.push(route);
 
     final wasPlaying = widget.controller.videoPlayerController.value.isPlaying;
 

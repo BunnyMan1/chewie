@@ -186,7 +186,9 @@ class _ChewieDemoState extends State<ChewieDemo> {
                             .isInitialized
                     ? Chewie(
                         controller: _chewieController!,
-                        onToggleFullscreen: (v) {},
+                        onToggleFullscreen: (bool isFullscreen) {
+                          debugPrint('Fullscreen: $isFullscreen');
+                        },
                       )
                     : const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
