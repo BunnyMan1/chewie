@@ -65,11 +65,13 @@ class _MaterialControlsState extends State<MaterialControls>
           children: [
             if (_latestValue.isBuffering)
               Center(
-                child: _buildIconbutton(
-                  onTap: () {},
-                  icon: null,
-                  alwayShow: true,
-                  iconWidget: const CircularProgressIndicator(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation(Colors.white),
                   ),
                 ),

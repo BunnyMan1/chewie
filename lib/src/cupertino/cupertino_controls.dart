@@ -93,8 +93,18 @@ class _CupertinoControlsState extends State<CupertinoControls>
           child: Stack(
             children: [
               if (_displayBufferingIndicator)
-                _chewieController?.bufferingBuilder?.call(context) ??
-                    const Center(child: CircularProgressIndicator())
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: widget.backgroundColor,
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  ),
+                )
               else
                 _buildHitArea(),
               Column(
