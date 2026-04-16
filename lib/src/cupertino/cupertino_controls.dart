@@ -228,8 +228,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final bool isFinished =
         (_latestValue.position >= _latestValue.duration) &&
         _latestValue.duration.inSeconds > 0;
-    final bool showPlayButton =
-        !_latestValue.isPlaying && !_dragging;
+    final bool showPlayButton = !_latestValue.isPlaying && !_dragging;
 
     return GestureDetector(
       onTap: _latestValue.isPlaying
@@ -323,7 +322,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     double barHeight,
     double buttonPadding,
   ) {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
+    final bool isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
     final opacity = isFinished ? 1.0 : (notifier.hideStuff ? 0.0 : 1.0);
 
     return GestureDetector(

@@ -10,10 +10,7 @@ import '../../src/material/material_progress_bar.dart';
 import '../../src/notifiers/index.dart';
 
 class MaterialControls extends StatefulWidget {
-  const MaterialControls({
-    super.key,
-    this.onClose,
-  });
+  const MaterialControls({super.key, this.onClose});
 
   final VoidCallback? onClose;
 
@@ -57,7 +54,8 @@ class _MaterialControlsState extends State<MaterialControls>
             shape: BoxShape.circle,
           ),
           padding: const EdgeInsets.all(12.0),
-          child: chewieController.errorBuilder?.call(
+          child:
+              chewieController.errorBuilder?.call(
                 context,
                 chewieController.videoPlayerController.value.errorDescription!,
               ) ??
@@ -91,9 +89,7 @@ class _MaterialControlsState extends State<MaterialControls>
                 const Spacer(),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    _buildBottomBar(context),
-                  ],
+                  children: <Widget>[_buildBottomBar(context)],
                 ),
               ],
             ),
@@ -131,10 +127,12 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildTopBar() {
-    final isFinished = _latestValue.position >= _latestValue.duration;
-    final showFullscreen = chewieController.allowFullScreen &&
+    final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
+    final showFullscreen =
+        chewieController.allowFullScreen &&
         (!chewieController.fullScreenByDefault ||
-            (chewieController.fullScreenByDefault && !chewieController.isFirstPlay)) &&
+            (chewieController.fullScreenByDefault &&
+                !chewieController.isFirstPlay)) &&
         !isFinished;
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
@@ -146,20 +144,14 @@ class _MaterialControlsState extends State<MaterialControls>
               showWhenFinshedPlayingVideo: true,
               icon: Icons.close,
               padding: const EdgeInsets.all(4),
-              constraints: BoxConstraints(
-                maxHeight: 36,
-                maxWidth: 36,
-              ),
+              constraints: BoxConstraints(maxHeight: 36, maxWidth: 36),
               iconSize: 24,
             ),
           if (showFullscreen) const Spacer(),
           if (showFullscreen)
             _buildIconbutton(
               padding: const EdgeInsets.all(4),
-              constraints: BoxConstraints(
-                maxHeight: 36,
-                maxWidth: 36,
-              ),
+              constraints: BoxConstraints(maxHeight: 36, maxWidth: 36),
               iconSize: 24,
               icon: chewieController.isFullScreen
                   ? Icons.fullscreen_exit_rounded
@@ -169,14 +161,13 @@ class _MaterialControlsState extends State<MaterialControls>
                     ? chewieController.exitFullScreen()
                     : chewieController.enterFullScreen();
               },
-            )
+            ),
         ],
       ),
     );
   }
-  AnimatedOpacity _buildBottomBar(
-    BuildContext context,
-  ) {
+
+  AnimatedOpacity _buildBottomBar(BuildContext context) {
     final bool isFinished = _latestValue.position >= _latestValue.duration;
 
     return AnimatedOpacity(
@@ -195,18 +186,12 @@ class _MaterialControlsState extends State<MaterialControls>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (!isFinished)
-                SizedBox(
-                  height: chewieController.isFullScreen ? 15.0 : 8,
-                ),
+                SizedBox(height: chewieController.isFullScreen ? 15.0 : 8),
               if (!chewieController.isLive && !chewieController.isFirstPlay)
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.only(right: 12),
-                    child: Row(
-                      children: [
-                        _buildProgressBar(),
-                      ],
-                    ),
+                    child: Row(children: [_buildProgressBar()]),
                   ),
                 ),
             ],
@@ -226,7 +211,7 @@ class _MaterialControlsState extends State<MaterialControls>
     Widget? iconWidget,
     BoxConstraints? constraints,
   }) {
-    final isFinished = _latestValue.position >= _latestValue.duration;
+    final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -236,10 +221,10 @@ class _MaterialControlsState extends State<MaterialControls>
             opacity: alwayShow
                 ? 1
                 : showWhenFinshedPlayingVideo && isFinished
-                    ? 1.0
-                    : !_dragging && !notifier.hideStuff
-                        ? 1.0
-                        : 0.0,
+                ? 1.0
+                : !_dragging && !notifier.hideStuff
+                ? 1.0
+                : 0.0,
             duration: const Duration(milliseconds: 300),
             child: Container(
               decoration: const BoxDecoration(
@@ -250,7 +235,8 @@ class _MaterialControlsState extends State<MaterialControls>
                 padding: padding,
                 // Always set the iconSize on the IconButton, not on the Icon itself:
                 // https://github.com/flutter/flutter/issues/52980
-                child: iconWidget ??
+                child:
+                    iconWidget ??
                     IconButton(
                       constraints: constraints,
                       iconSize: iconSize,
@@ -271,7 +257,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildHitArea() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
+    final bool isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
 
     return Padding(
       padding: const EdgeInsets.only(top: 12.0, bottom: 60),
@@ -342,7 +328,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   void _playPause() {
-    final isFinished = _latestValue.position >= _latestValue.duration;
+    final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
 
     setState(() {
       if (controller.value.isPlaying) {
@@ -378,12 +364,13 @@ class _MaterialControlsState extends State<MaterialControls>
     if (!mounted) return;
     setState(() {
       _latestValue = controller.value;
-      final isFinished = _latestValue.position >= _latestValue.duration;
+      final isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
 
       if (isFinished) {
         if (chewieController.isFirstPlay) {
           chewieController.isFirstPlay = false;
-          if (chewieController.fullScreenByDefault && chewieController.isFullScreen) {
+          if (chewieController.fullScreenByDefault &&
+              chewieController.isFullScreen) {
             chewieController.exitFullScreen();
           }
         }
@@ -393,7 +380,7 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildProgressBar() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
+    final bool isFinished = _latestValue.position >= _latestValue.duration && _latestValue.duration.inSeconds > 0;
     if (isFinished) {
       return Container();
     } else {
@@ -414,7 +401,8 @@ class _MaterialControlsState extends State<MaterialControls>
 
             _startHideTimer();
           },
-          colors: chewieController.materialProgressColors ??
+          colors:
+              chewieController.materialProgressColors ??
               ChewieProgressColors(
                 playedColor: Theme.of(context).colorScheme.secondary,
                 handleColor: Theme.of(context).colorScheme.secondary,
