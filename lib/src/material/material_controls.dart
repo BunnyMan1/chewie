@@ -145,7 +145,9 @@ class _MaterialControlsState extends State<MaterialControls>
 
   /// Fullscreen toggle button — top-right, animated
   Widget _buildTopRightButtons() {
-    final isFinished = _latestValue.position >= _latestValue.duration;
+    final isFinished =
+        _latestValue.duration > Duration.zero &&
+        _latestValue.position >= _latestValue.duration;
     final showFullscreen =
         chewieController.allowFullScreen &&
         (!chewieController.fullScreenByDefault ||
@@ -212,10 +214,7 @@ class _MaterialControlsState extends State<MaterialControls>
             iconSize: iconSize,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: Icon(
-              icon,
-              color: Colors.white,
-            ),
+            icon: Icon(icon, color: Colors.white),
             onPressed: onTap,
           ),
         ),
@@ -287,7 +286,9 @@ class _MaterialControlsState extends State<MaterialControls>
   // }
 
   AnimatedOpacity _buildBottomBar(BuildContext context) {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
+    final bool isFinished =
+        _latestValue.duration > Duration.zero &&
+        _latestValue.position >= _latestValue.duration;
 
     return AnimatedOpacity(
       opacity: notifier.hideStuff ? 0.0 : 1.0,
@@ -345,7 +346,9 @@ class _MaterialControlsState extends State<MaterialControls>
     Widget? iconWidget,
     BoxConstraints? constraints,
   }) {
-    final isFinished = _latestValue.position >= _latestValue.duration;
+    final isFinished =
+        _latestValue.duration > Duration.zero &&
+        _latestValue.position >= _latestValue.duration;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -391,8 +394,11 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildHitArea() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
-    if (chewieController.isFirstPlay && !isFinished) return const SizedBox.shrink();
+    final bool isFinished =
+        _latestValue.duration > Duration.zero &&
+        _latestValue.position >= _latestValue.duration;
+    if (chewieController.isFirstPlay && !isFinished)
+      return const SizedBox.shrink();
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -528,7 +534,9 @@ class _MaterialControlsState extends State<MaterialControls>
     if (!mounted) return;
     setState(() {
       _latestValue = controller.value;
-      final isFinished = _latestValue.position >= _latestValue.duration;
+      final isFinished =
+          _latestValue.duration > Duration.zero &&
+          _latestValue.position >= _latestValue.duration;
 
       if (isFinished) {
         if (chewieController.isFirstPlay) {
@@ -544,7 +552,9 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildProgressBar() {
-    final bool isFinished = _latestValue.position >= _latestValue.duration;
+    final bool isFinished =
+        _latestValue.duration > Duration.zero &&
+        _latestValue.position >= _latestValue.duration;
     if (isFinished) {
       return Container();
     } else {

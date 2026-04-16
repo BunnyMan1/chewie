@@ -83,7 +83,7 @@ class ChewieState extends State<Chewie> {
     } else if (_isFullScreen && !widget.controller.isFullScreen) {
       _isFullScreen = false;
     }
-    
+
     // Only notify the app when fullscreen state actually changed to avoid
     // double-triggering (e.g. when enterFullScreen(notify:false) is used)
     if (prevIsFullScreen != _isFullScreen) {
@@ -454,6 +454,7 @@ class ChewieController extends ChangeNotifier {
   bool isFirstPlay;
   final VoidCallback? onCloseCallback;
   final VoidCallback? onInitialPlayCompletedCallBack;
+
   /// Called by controls UI when the fullscreen button is tapped.
   /// If provided, this bypasses chewie's internal route-based fullscreen
   /// and lets the app handle the fullscreen transition (e.g. with animation).
