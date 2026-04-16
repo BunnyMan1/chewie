@@ -127,7 +127,8 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildTopBar() {
-    final isFinished = _latestValue.duration > Duration.zero &&
+    final isFinished =
+        _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
     final showFullscreen =
         chewieController.allowFullScreen &&
@@ -235,7 +236,8 @@ class _MaterialControlsState extends State<MaterialControls>
   // }
 
   AnimatedOpacity _buildBottomBar(BuildContext context) {
-    final bool isFinished = _latestValue.duration > Duration.zero &&
+    final bool isFinished =
+        _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
 
     return AnimatedOpacity(
@@ -294,7 +296,8 @@ class _MaterialControlsState extends State<MaterialControls>
     Widget? iconWidget,
     BoxConstraints? constraints,
   }) {
-    final isFinished = _latestValue.duration > Duration.zero &&
+    final isFinished =
+        _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
     return GestureDetector(
       onTap: onTap,
@@ -341,7 +344,8 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildHitArea() {
-    final bool isFinished = _latestValue.duration > Duration.zero &&
+    final bool isFinished =
+        _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
 
     return Padding(
@@ -499,7 +503,8 @@ class _MaterialControlsState extends State<MaterialControls>
     if (!mounted) return;
     setState(() {
       _latestValue = controller.value;
-      final isFinished = _latestValue.duration > Duration.zero &&
+      final isFinished =
+          _latestValue.duration > Duration.zero &&
           _latestValue.position >= _latestValue.duration;
 
       if (isFinished) {
@@ -516,7 +521,8 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Widget _buildProgressBar() {
-    final bool isFinished = _latestValue.duration > Duration.zero &&
+    final bool isFinished =
+        _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
     if (isFinished) {
       return Container();
