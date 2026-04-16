@@ -372,7 +372,9 @@ class _CupertinoControlsState extends State<CupertinoControls>
                       right: buttonPadding,
                     ),
                     child: Icon(
-                      _latestValue.volume > 0 ? Icons.volume_up : Icons.volume_off,
+                      _latestValue.volume > 0
+                          ? Icons.volume_up
+                          : Icons.volume_off,
                       color: iconColor,
                       size: 16,
                     ),
