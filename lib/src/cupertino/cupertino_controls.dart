@@ -266,7 +266,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final opacity = notifier.hideStuff ? 0.0 : 1.0;
 
     return GestureDetector(
-      onTap: opacity > 0.5 ? _onExpandCollapse : null,
+      onTap: _onExpandCollapse,
       child: AnimatedOpacity(
         opacity: opacity,
         duration: const Duration(milliseconds: 300),
@@ -274,7 +274,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
           scale: opacity > 0.5 ? 1.0 : 0.9,
           duration: const Duration(milliseconds: 300),
           child: IgnorePointer(
-            ignoring: opacity < 0.5,
+            ignoring: false,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: BackdropFilter(
@@ -350,17 +350,15 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final opacity = notifier.hideStuff ? 0.0 : 1.0;
 
     return GestureDetector(
-      onTap: opacity > 0.5
-          ? () {
-              _cancelAndRestartTimer();
-              if (_latestValue.volume == 0) {
-                controller.setVolume(_latestVolume ?? 0.5);
-              } else {
-                _latestVolume = controller.value.volume;
-                controller.setVolume(0.0);
-              }
-            }
-          : null,
+      onTap: () {
+        _cancelAndRestartTimer();
+        if (_latestValue.volume == 0) {
+          controller.setVolume(_latestVolume ?? 0.5);
+        } else {
+          _latestVolume = controller.value.volume;
+          controller.setVolume(0.0);
+        }
+      },
       child: AnimatedOpacity(
         opacity: opacity,
         duration: const Duration(milliseconds: 300),
@@ -368,7 +366,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
           scale: opacity > 0.5 ? 1.0 : 0.9,
           duration: const Duration(milliseconds: 300),
           child: IgnorePointer(
-            ignoring: opacity < 0.5,
+            ignoring: false,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: BackdropFilter(
@@ -409,7 +407,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     final opacity = isFinished ? 1.0 : (notifier.hideStuff ? 0.0 : 1.0);
 
     return GestureDetector(
-      onTap: opacity > 0.5 ? widget.onClose : null,
+      onTap: widget.onClose,
       child: AnimatedOpacity(
         opacity: opacity,
         duration: const Duration(milliseconds: 300),
@@ -417,7 +415,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
           scale: opacity > 0.5 ? 1.0 : 0.9,
           duration: const Duration(milliseconds: 300),
           child: IgnorePointer(
-            ignoring: opacity < 0.5,
+            ignoring: false,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: BackdropFilter(

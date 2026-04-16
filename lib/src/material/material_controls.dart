@@ -50,11 +50,21 @@ class _MaterialControlsState extends State<MaterialControls>
   @override
   Widget build(BuildContext context) {
     if (_latestValue.hasError) {
-      return chewieController.errorBuilder?.call(
-            context,
-            chewieController.videoPlayerController.value.errorDescription!,
-          ) ??
-          const Center(child: Icon(Icons.error, color: Colors.white, size: 42));
+      return Center(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.black54,
+            shape: BoxShape.circle,
+          ),
+          padding: const EdgeInsets.all(12.0),
+          child:
+              chewieController.errorBuilder?.call(
+                context,
+                chewieController.videoPlayerController.value.errorDescription!,
+              ) ??
+              const Icon(Icons.error, color: Colors.white, size: 42),
+        ),
+      );
     }
 
     return GestureDetector(
@@ -237,7 +247,7 @@ class _MaterialControlsState extends State<MaterialControls>
   //   );
   // }
 
-  AnimatedOpacity _buildBottomBar(BuildContext context) {
+  Widget _buildBottomBar(BuildContext context) {
     final bool isFinished =
         _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
@@ -257,7 +267,7 @@ class _MaterialControlsState extends State<MaterialControls>
           bottom: chewieController.isFullScreen,
           minimum: chewieController.controlsSafeAreaMinimum,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Flexible(
@@ -275,11 +285,9 @@ class _MaterialControlsState extends State<MaterialControls>
               if (!isFinished)
                 SizedBox(height: chewieController.isFullScreen ? 15.0 : 8),
               if (!chewieController.isLive && !chewieController.isFirstPlay)
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Row(children: [_buildProgressBar()]),
-                  ),
+                Container(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Row(children: [_buildProgressBar()]),
                 ),
             ],
           ),
@@ -310,7 +318,7 @@ class _MaterialControlsState extends State<MaterialControls>
         : 0.0;
 
     return GestureDetector(
-      onTap: opacity > 0.5 ? onTap : null,
+      onTap: onTap,
       child: Container(
         color: Colors.transparent,
         child: Center(
@@ -321,7 +329,7 @@ class _MaterialControlsState extends State<MaterialControls>
               scale: opacity > 0.5 ? 1.0 : 0.85,
               duration: const Duration(milliseconds: 300),
               child: IgnorePointer(
-                ignoring: opacity < 0.5,
+                ignoring: false,
                 child: Container(
                   decoration: const BoxDecoration(
                     color: Colors.black54,
