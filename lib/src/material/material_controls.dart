@@ -397,8 +397,9 @@ class _MaterialControlsState extends State<MaterialControls>
     final bool isFinished =
         _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
-    if (chewieController.isFirstPlay && !isFinished)
+    if (chewieController.isFirstPlay && !isFinished) {
       return const SizedBox.shrink();
+    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
