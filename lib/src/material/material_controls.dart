@@ -206,22 +206,19 @@ class _MaterialControlsState extends State<MaterialControls>
     double iconSize = 32.0,
     EdgeInsetsGeometry padding = const EdgeInsets.all(8.0),
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.black54,
-          shape: BoxShape.circle,
-        ),
-        child: Padding(
-          padding: padding,
-          child: IconButton(
-            iconSize: iconSize,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: Icon(icon, color: Colors.white),
-            onPressed: onTap,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.black54,
+        shape: BoxShape.circle,
+      ),
+      child: Padding(
+        padding: padding,
+        child: IconButton(
+          iconSize: iconSize,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: Icon(icon, color: Colors.white),
+          onPressed: onTap,
         ),
       ),
     );
