@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 class PlaybackSpeedDialog extends StatelessWidget {
   const PlaybackSpeedDialog({
-    Key? key,
+    super.key,
     required List<double> speeds,
     required double selected,
-  })  : _speeds = speeds,
-        _selected = selected,
-        super(key: key);
+  }) : _speeds = speeds,
+       _selected = selected;
 
   final List<double> _speeds;
   final double _selected;
@@ -20,26 +19,22 @@ class PlaybackSpeedDialog extends StatelessWidget {
       shrinkWrap: true,
       physics: const ScrollPhysics(),
       itemBuilder: (context, index) {
-        final _speed = _speeds[index];
+        final speed = _speeds[index];
         return ListTile(
           dense: true,
           title: Row(
             children: [
-              if (_speed == _selected)
-                Icon(
-                  Icons.check,
-                  size: 20.0,
-                  color: selectedColor,
-                )
+              if (speed == _selected)
+                Icon(Icons.check, size: 20.0, color: selectedColor)
               else
                 Container(width: 20.0),
               const SizedBox(width: 16.0),
-              Text(_speed.toString()),
+              Text(speed.toString()),
             ],
           ),
-          selected: _speed == _selected,
+          selected: speed == _selected,
           onTap: () {
-            Navigator.of(context).pop(_speed);
+            Navigator.of(context).pop(speed);
           },
         );
       },

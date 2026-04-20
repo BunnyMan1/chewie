@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -7,13 +6,13 @@ import '../src/helpers/adaptive_controls.dart';
 import '../src/notifiers/index.dart';
 
 class PlayerWithControls extends StatelessWidget {
-  const PlayerWithControls({Key? key}) : super(key: key);
+  const PlayerWithControls({super.key});
 
   @override
   Widget build(BuildContext context) {
     final ChewieController chewieController = ChewieController.of(context);
 
-    double _calculateAspectRatio(BuildContext context) {
+    double calculateAspectRatio(BuildContext context) {
       final size = MediaQuery.of(context).size;
       final width = size.width;
       final height = size.height;
@@ -21,25 +20,27 @@ class PlayerWithControls extends StatelessWidget {
       return width > height ? width / height : height / width;
     }
 
-    Widget _buildControls(
+    Widget buildControls(
       BuildContext context,
       ChewieController chewieController,
     ) {
       return chewieController.showControls
           ? chewieController.customControls ??
-              AdaptiveControls(
-                onClose: chewieController.onCloseCallback,
-              )
+                AdaptiveControls(onClose: chewieController.onCloseCallback)
           : Container();
     }
 
-    Widget _buildPlayerWithControls(ChewieController chewieController, BuildContext context) {
+    Widget buildPlayerWithControls(
+      ChewieController chewieController,
+      BuildContext context,
+    ) {
       return Stack(
         children: <Widget>[
           chewieController.placeholder ?? Container(),
           Center(
             child: AspectRatio(
-              aspectRatio: chewieController.aspectRatio ??
+              aspectRatio:
+                  chewieController.aspectRatio ??
                   chewieController.videoPlayerController.value.aspectRatio,
               child: VideoPlayer(chewieController.videoPlayerController),
             ),
@@ -47,29 +48,27 @@ class PlayerWithControls extends StatelessWidget {
           chewieController.overlay ?? Container(),
           if (Theme.of(context).platform != TargetPlatform.iOS)
             Consumer<PlayerNotifier>(
-              builder: (
-                BuildContext context,
-                PlayerNotifier notifier,
-                Widget? widget,
-              ) =>
-                  AnimatedOpacity(
-                opacity: notifier.hideStuff ? 0.0 : 0.8,
-                duration: const Duration(
-                  milliseconds: 250,
-                ),
-                child: Container(
-                  decoration: const BoxDecoration(color: Colors.black54),
-                  child: Container(),
-                ),
-              ),
+              builder:
+                  (
+                    BuildContext context,
+                    PlayerNotifier notifier,
+                    Widget? widget,
+                  ) => AnimatedOpacity(
+                    opacity: notifier.hideStuff ? 0.0 : 0.8,
+                    duration: const Duration(milliseconds: 250),
+                    child: Container(
+                      decoration: const BoxDecoration(color: Colors.black54),
+                      child: Container(),
+                    ),
+                  ),
             ),
           if (!chewieController.isFullScreen)
-            _buildControls(context, chewieController)
+            buildControls(context, chewieController)
           else
             SafeArea(
               bottom: false,
               top: false,
-              child: _buildControls(context, chewieController),
+              child: buildControls(context, chewieController),
             ),
         ],
       );
@@ -80,8 +79,8 @@ class PlayerWithControls extends StatelessWidget {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         child: AspectRatio(
-          aspectRatio: _calculateAspectRatio(context),
-          child: _buildPlayerWithControls(chewieController, context),
+          aspectRatio: calculateAspectRatio(context),
+          child: buildPlayerWithControls(chewieController, context),
         ),
       ),
     );
