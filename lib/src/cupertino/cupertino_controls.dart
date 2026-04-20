@@ -49,6 +49,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
   Timer? _bufferingDisplayTimer;
   bool _displayBufferingIndicator = false;
   double selectedSpeed = 1.0;
+  bool _externalFullscreenState = false;
   late VideoPlayerController controller;
 
   // We know that _chewieController is set in didChangeDependencies
@@ -271,7 +272,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
               color: backgroundColor,
               child: Center(
                 child: Icon(
-                  chewieController.isFullScreen
+                  _externalFullscreenState
                       ? CupertinoIcons.arrow_down_right_arrow_up_left
                       : CupertinoIcons.arrow_up_left_arrow_down_right,
                   color: iconColor,
@@ -511,6 +512,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   Future<void> _initialize() async {
+    _externalFullscreenState = chewieController.isFullScreen;
     _subtitleOn =
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
@@ -537,13 +539,17 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
       final externalToggle = chewieController.onExternalFullScreenToggle;
       if (externalToggle != null) {
-        final entering = !chewieController.isFullScreen;
+        final entering = !_externalFullscreenState;
+        _externalFullscreenState = entering;
         if (entering) {
           chewieController.enterFullScreen(notify: false);
         } else {
           chewieController.exitFullScreen(notify: false);
         }
         externalToggle(entering);
+        if (mounted) {
+          setState(() {});
+        }
       } else {
         chewieController.toggleFullScreen();
       }
@@ -662,6 +668,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
 
     setState(() {
+      _externalFullscreenState = chewieController.isFullScreen;
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
       final isFinished = _latestValue.position >= _latestValue.duration;
