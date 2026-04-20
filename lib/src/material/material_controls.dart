@@ -181,13 +181,15 @@ class _MaterialControlsState extends State<MaterialControls>
   void _onFullScreenToggle() {
     final externalToggle = chewieController.onExternalFullScreenToggle;
     if (externalToggle != null) {
-      // Let the app drive the fullscreen transition entirely.
-      // Update the controller state silently (no notify) so isFullScreen
-      // stays consistent but the listener doesn't re-trigger.
       final entering = !chewieController.isFullScreen;
-      chewieController.enterFullScreen(notify: false);
-      if (!entering) chewieController.exitFullScreen();
-      externalToggle(!chewieController.isFullScreen);
+      // Keep chewie's internal fullscreen flag in sync with the app-driven
+      // transition, then delegate the actual UI transition externally.
+      if (entering) {
+        chewieController.enterFullScreen(notify: false);
+      } else {
+        chewieController.exitFullScreen();
+      }
+      externalToggle(entering);
     } else {
       chewieController.isFullScreen
           ? chewieController.exitFullScreen()
@@ -397,9 +399,6 @@ class _MaterialControlsState extends State<MaterialControls>
     final bool isFinished =
         _latestValue.duration > Duration.zero &&
         _latestValue.position >= _latestValue.duration;
-    if (chewieController.isFirstPlay && !isFinished) {
-      return const SizedBox.shrink();
-    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
