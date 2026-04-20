@@ -49,7 +49,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
   Timer? _bufferingDisplayTimer;
   bool _displayBufferingIndicator = false;
   double selectedSpeed = 1.0;
-  bool _fullscreenIconState = false;
   late VideoPlayerController controller;
 
   // We know that _chewieController is set in didChangeDependencies
@@ -272,7 +271,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
               color: backgroundColor,
               child: Center(
                 child: Icon(
-                  _fullscreenIconState
+                  chewieController.isFullScreen
                       ? CupertinoIcons.arrow_down_right_arrow_up_left
                       : CupertinoIcons.arrow_up_left_arrow_down_right,
                   color: iconColor,
@@ -512,7 +511,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
   }
 
   Future<void> _initialize() async {
-    _fullscreenIconState = chewieController.isFullScreen;
     _subtitleOn =
         chewieController.showSubtitles &&
         (chewieController.subtitle?.isNotEmpty ?? false);
@@ -546,11 +544,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
           chewieController.exitFullScreen(notify: false);
         }
         externalToggle(entering);
-        _fullscreenIconState = entering;
-        if (mounted) setState(() {});
       } else {
         chewieController.toggleFullScreen();
-        _fullscreenIconState = chewieController.isFullScreen;
       }
 
       _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
@@ -667,7 +662,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
 
     setState(() {
-      _fullscreenIconState = chewieController.isFullScreen;
       _latestValue = controller.value;
       _subtitlesPosition = controller.value.position;
       final isFinished = _latestValue.position >= _latestValue.duration;
