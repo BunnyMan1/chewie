@@ -455,7 +455,7 @@ class ChewieController extends ChangeNotifier {
   /// Called by controls UI when the fullscreen button is tapped.
   /// If provided, this bypasses chewie's internal route-based fullscreen
   /// and lets the app handle the fullscreen transition (e.g. with animation).
-  final void Function(bool isFullScreen)? onExternalFullScreenToggle;
+  final Future<void> Function(bool isFullScreen)? onExternalFullScreenToggle;
   final Future<void> Function(
     BuildContext context,
     List<OptionItem> chewieOptions,

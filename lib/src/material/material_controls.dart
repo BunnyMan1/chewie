@@ -30,6 +30,7 @@ class _MaterialControlsState extends State<MaterialControls>
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
   bool _displayTapped = false;
+  bool _isExternalFullscreenToggleInProgress = false;
 
   // final originalBarHeight = 48.0 * 1.25;
   final barHeight = 48.0 * 1.5;
@@ -178,18 +179,17 @@ class _MaterialControlsState extends State<MaterialControls>
   /// Handles fullscreen toggle: uses the app-provided callback if available
   /// (prevents chewie from pushing its own route which conflicts with the
   /// app's custom animation-based fullscreen system).
-  void _onFullScreenToggle() {
+  Future<void> _onFullScreenToggle() async {
     final externalToggle = chewieController.onExternalFullScreenToggle;
     if (externalToggle != null) {
+      if (_isExternalFullscreenToggleInProgress) return;
       final entering = !chewieController.isFullScreen;
-      // Keep chewie's internal fullscreen flag in sync with the app-driven
-      // transition, then delegate the actual UI transition externally.
-      if (entering) {
-        chewieController.enterFullScreen(notify: false);
-      } else {
-        chewieController.exitFullScreen(notify: false);
+      _isExternalFullscreenToggleInProgress = true;
+      try {
+        await externalToggle(entering);
+      } finally {
+        _isExternalFullscreenToggleInProgress = false;
       }
-      externalToggle(entering);
       if (mounted) {
         setState(() {});
       }

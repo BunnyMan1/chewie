@@ -49,6 +49,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
   Timer? _bufferingDisplayTimer;
   bool _displayBufferingIndicator = false;
   double selectedSpeed = 1.0;
+  bool _isExternalFullscreenToggleInProgress = false;
   late VideoPlayerController controller;
 
   // We know that _chewieController is set in didChangeDependencies
@@ -531,30 +532,31 @@ class _CupertinoControlsState extends State<CupertinoControls>
     }
   }
 
-  void _onExpandCollapse() {
+  Future<void> _onExpandCollapse() async {
     setState(() {
       notifier.hideStuff = true;
+    });
 
-      final externalToggle = chewieController.onExternalFullScreenToggle;
-      if (externalToggle != null) {
-        final entering = !chewieController.isFullScreen;
-        if (entering) {
-          chewieController.enterFullScreen(notify: false);
-        } else {
-          chewieController.exitFullScreen(notify: false);
-        }
-        externalToggle(entering);
-      } else {
-        chewieController.toggleFullScreen();
+    final externalToggle = chewieController.onExternalFullScreenToggle;
+    if (externalToggle != null) {
+      if (_isExternalFullscreenToggleInProgress) return;
+      final entering = !chewieController.isFullScreen;
+      _isExternalFullscreenToggleInProgress = true;
+      try {
+        await externalToggle(entering);
+      } finally {
+        _isExternalFullscreenToggleInProgress = false;
       }
+    } else {
+      chewieController.toggleFullScreen();
+    }
 
-      _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          setState(() {
-            _cancelAndRestartTimer();
-          });
-        }
-      });
+    _expandCollapseTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _cancelAndRestartTimer();
+        });
+      }
     });
   }
 
