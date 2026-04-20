@@ -30,7 +30,6 @@ class _MaterialControlsState extends State<MaterialControls>
   Timer? _showAfterExpandCollapseTimer;
   bool _dragging = false;
   bool _displayTapped = false;
-  bool _externalFullscreenState = false;
 
   // final originalBarHeight = 48.0 * 1.25;
   final barHeight = 48.0 * 1.5;
@@ -166,7 +165,7 @@ class _MaterialControlsState extends State<MaterialControls>
         duration: const Duration(milliseconds: 300),
         child: _buildRawIconButton(
           onTap: _onFullScreenToggle,
-          icon: _externalFullscreenState
+          icon: chewieController.isFullScreen
               ? Icons.fullscreen_exit_rounded
               : Icons.fullscreen_rounded,
           iconSize: 24,
@@ -182,8 +181,7 @@ class _MaterialControlsState extends State<MaterialControls>
   void _onFullScreenToggle() {
     final externalToggle = chewieController.onExternalFullScreenToggle;
     if (externalToggle != null) {
-      final entering = !_externalFullscreenState;
-      _externalFullscreenState = entering;
+      final entering = !chewieController.isFullScreen;
       // Keep chewie's internal fullscreen flag in sync with the app-driven
       // transition, then delegate the actual UI transition externally.
       if (entering) {
@@ -480,7 +478,6 @@ class _MaterialControlsState extends State<MaterialControls>
   }
 
   Future<void> _initialize() async {
-    _externalFullscreenState = chewieController.isFullScreen;
     controller.addListener(_updateState);
 
     _updateState();
@@ -536,7 +533,6 @@ class _MaterialControlsState extends State<MaterialControls>
   void _updateState() {
     if (!mounted) return;
     setState(() {
-      _externalFullscreenState = chewieController.isFullScreen;
       _latestValue = controller.value;
       final isFinished =
           _latestValue.duration > Duration.zero &&
