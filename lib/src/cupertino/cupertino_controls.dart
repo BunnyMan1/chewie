@@ -272,8 +272,8 @@ class _CupertinoControlsState extends State<CupertinoControls>
               child: Center(
                 child: Icon(
                   chewieController.isFullScreen
-                      ? CupertinoIcons.arrow_up_left_arrow_down_right
-                      : CupertinoIcons.arrow_down_right_arrow_up_left,
+                      ? CupertinoIcons.arrow_down_right_arrow_up_left
+                      : CupertinoIcons.arrow_up_left_arrow_down_right,
                   color: iconColor,
                   size: 16,
                 ),
@@ -544,9 +544,6 @@ class _CupertinoControlsState extends State<CupertinoControls>
           chewieController.exitFullScreen(notify: false);
         }
         externalToggle(entering);
-        if (mounted) {
-          setState(() {});
-        }
       } else {
         chewieController.toggleFullScreen();
       }
