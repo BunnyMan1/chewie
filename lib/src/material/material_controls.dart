@@ -190,6 +190,9 @@ class _MaterialControlsState extends State<MaterialControls>
         chewieController.exitFullScreen();
       }
       externalToggle(entering);
+      if (mounted) {
+        setState(() {});
+      }
     } else {
       chewieController.isFullScreen
           ? chewieController.exitFullScreen()
