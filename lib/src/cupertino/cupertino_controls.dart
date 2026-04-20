@@ -538,9 +538,12 @@ class _CupertinoControlsState extends State<CupertinoControls>
       final externalToggle = chewieController.onExternalFullScreenToggle;
       if (externalToggle != null) {
         final entering = !chewieController.isFullScreen;
-        chewieController.enterFullScreen(notify: false);
-        if (!entering) chewieController.exitFullScreen();
-        externalToggle(!chewieController.isFullScreen);
+        if (entering) {
+          chewieController.enterFullScreen(notify: false);
+        } else {
+          chewieController.exitFullScreen(notify: false);
+        }
+        externalToggle(entering);
       } else {
         chewieController.toggleFullScreen();
       }
